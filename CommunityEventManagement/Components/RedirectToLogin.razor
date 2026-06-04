@@ -1,0 +1,12 @@
+@inject NavigationManager Navigation
+
+@* This tiny component has no visible output. Its only job is to send the browser to the login   *@
+@* page when someone tries to open a page they are not allowed to see. I trigger a full page load *@
+@* so the cookie authentication is checked freshly by the server.                                 *@
+
+@code {
+    protected override void OnInitialized()
+    {
+        Navigation.NavigateTo("/login", forceLoad: true);
+    }
+}
