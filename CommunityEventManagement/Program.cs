@@ -71,6 +71,14 @@ builder.Services.AddCascadingAuthenticationState();
 
 var app = builder.Build();
 
+// Seed the database as the application starts. This applies my migrations (creating the database
+// and tables if needed) and adds the default admin account plus some sample data. I create a
+// scope first because the seeder needs scoped services.
+using (IServiceScope scope = app.Services.CreateScope())
+{
+    await DbSeeder.SeedAsync(scope.ServiceProvider);
+}
+
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
