@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="CommunityEventManagement.Tests/CommunityEventManagement.Tests.csproj" />
+  <Project Path="CommunityEventManagement/CommunityEventManagement.csproj" />
+</Solution>
