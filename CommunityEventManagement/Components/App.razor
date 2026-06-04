@@ -11,13 +11,27 @@
     <link rel="stylesheet" href="@Assets["CommunityEventManagement.styles.css"]" />
     <ImportMap />
     <link rel="icon" type="image/png" href="favicon.png" />
-    <HeadOutlet @rendermode="InteractiveServer" />
+    <HeadOutlet @rendermode="RenderModeForPage" />
 </head>
 
 <body>
-    <Routes @rendermode="InteractiveServer" />
+    <Routes @rendermode="RenderModeForPage" />
     <ReconnectModal />
     <script src="@Assets["_framework/blazor.web.js"]"></script>
 </body>
 
 </html>
+
+@code {
+    // The current request is given to me as a cascading value so I can look at the URL.
+    [CascadingParameter] private HttpContext HttpContext { get; set; } = default!;
+
+    // Almost every page in my app is interactive (Interactive Server). The one exception is the
+    // login page: it has to be rendered statically so its form does a normal HTTP POST to my
+    // AuthController, which is how cookie authentication has to be done. Returning null here means
+    // "render this page statically", and InteractiveServer means "render it interactively".
+    private IComponentRenderMode? RenderModeForPage =>
+        HttpContext.Request.Path.StartsWithSegments("/login")
+            ? null
+            : InteractiveServer;
+}

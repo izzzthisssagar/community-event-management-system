@@ -3,6 +3,7 @@ using CommunityEventManagement.Components;
 using CommunityEventManagement.Domain.Interfaces;
 using CommunityEventManagement.Infrastructure.Data;
 using CommunityEventManagement.Infrastructure.Repositories;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -42,6 +43,32 @@ builder.Services.AddScoped<IVenueService, VenueService>();
 builder.Services.AddScoped<IActivityService, ActivityService>();
 builder.Services.AddScoped<IRegistrationService, RegistrationService>();
 
+// ----- Authentication -----
+// The user repository and the auth service handle logging people in and out.
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+
+// MVC controllers are needed for my AuthController (the login form posts to it).
+builder.Services.AddControllersWithViews();
+
+// IHttpContextAccessor lets my AuthService reach the current HttpContext so it can write the
+// authentication cookie during the login request.
+builder.Services.AddHttpContextAccessor();
+
+// Set up cookie authentication. LoginPath is where unauthenticated users get sent.
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/login";
+        options.LogoutPath = "/auth/logout";
+        options.AccessDeniedPath = "/access-denied";
+        options.ExpireTimeSpan = TimeSpan.FromHours(8);
+    });
+builder.Services.AddAuthorization();
+
+// This makes the signed-in user's identity available to my Blazor components as a cascading value.
+builder.Services.AddCascadingAuthenticationState();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -54,9 +81,19 @@ if (!app.Environment.IsDevelopment())
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
 app.UseHttpsRedirection();
 
+// The authentication middleware reads the cookie and works out who the user is, and the
+// authorization middleware then enforces any [Authorize] rules. They must come before the
+// antiforgery and endpoint middleware below.
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.UseAntiforgery();
 
 app.MapStaticAssets();
+
+// Map my MVC controllers (this is what makes the /auth/... routes work).
+app.MapControllers();
+
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
