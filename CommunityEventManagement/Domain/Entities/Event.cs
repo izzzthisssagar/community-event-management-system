@@ -71,10 +71,11 @@ public class Event : BaseEntity, ICancelable
     }
 
     /// <summary>
-    /// Registers a participant for this event. I put the business rules inside the entity
-    /// itself so the rules can never be skipped, no matter where the call comes from.
+    /// Registers a participant for this event and returns the new Registration that was created.
+    /// I put the business rules inside the entity itself so the rules can never be skipped, no
+    /// matter where the call comes from.
     /// </summary>
-    public void AddRegistration(Participant participant, string sStatus)
+    public Registration AddRegistration(Participant participant, string sStatus)
     {
         // Rule 1: the same participant must not be able to register twice for the same event.
         // I only count registrations that are still active (not cancelled ones).
@@ -93,8 +94,11 @@ public class Event : BaseEntity, ICancelable
                 $"Event '{Name}' has reached its maximum capacity of {MaxCapacity}.");
         }
 
-        // If both rules pass, I create the new registration and add it to my private list.
-        _registrations.Add(new Registration(Id, participant.Id, sStatus));
+        // If both rules pass, I create the new registration, add it to my private list and return
+        // it so the service layer can save it to the database.
+        Registration newRegistration = new Registration(Id, participant.Id, sStatus);
+        _registrations.Add(newRegistration);
+        return newRegistration;
     }
 
     /// <summary>

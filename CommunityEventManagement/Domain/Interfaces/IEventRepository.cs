@@ -36,6 +36,9 @@ public interface IEventRepository
     // Updates an existing event and refreshes which venues and activities it is linked to.
     Task UpdateAsync(Event updatedEvent, IEnumerable<Guid> venueIds, IEnumerable<Guid> activityIds);
 
+    // Saves the cancelled state of an event (after its Cancel() method has been called).
+    Task SaveCancellationAsync(Event cancelledEvent);
+
     // Deletes the event with the given Id.
     Task DeleteAsync(Guid guidId);
 }

@@ -201,6 +201,21 @@ public class EventRepository : IEventRepository
         await context.SaveChangesAsync();
     }
 
+    public async Task SaveCancellationAsync(Event cancelledEvent)
+    {
+        using ApplicationDbContext context = await _dcfContextFactory.CreateDbContextAsync();
+
+        // Load the real tracked event and cancel it through its own domain method, then save.
+        Event? existingEvent = await context.Events.FirstOrDefaultAsync(e => e.Id == cancelledEvent.Id);
+        if (existingEvent is null)
+        {
+            throw new EventNotFoundException($"Could not cancel because event with Id '{cancelledEvent.Id}' was not found.");
+        }
+
+        existingEvent.Cancel(cancelledEvent.CancellationReason ?? "Cancelled by the administrator.");
+        await context.SaveChangesAsync();
+    }
+
     public async Task DeleteAsync(Guid guidId)
     {
         using ApplicationDbContext context = await _dcfContextFactory.CreateDbContextAsync();
