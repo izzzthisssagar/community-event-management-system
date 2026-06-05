@@ -1,4 +1,4 @@
-﻿@inherits LayoutComponentBase
+@inherits LayoutComponentBase
 
 <div class="page">
     <div class="sidebar">
@@ -7,11 +7,24 @@
 
     <main>
         <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+            @* Show who is signed in, plus a logout link, when there is a logged-in user. *@
+            <AuthorizeView>
+                <Authorized>
+                    <span class="me-3">Signed in as <strong>@context.User.Identity?.Name</strong></span>
+                    <a href="/auth/logout" class="btn btn-sm btn-outline-secondary">Log out</a>
+                </Authorized>
+                <NotAuthorized>
+                    <a href="/login" class="btn btn-sm btn-primary">Log in</a>
+                </NotAuthorized>
+            </AuthorizeView>
         </div>
 
         <article class="content px-4">
-            @Body
+            @* Everything inside the boundary is protected: if a page throws, the user sees a       *@
+            @* friendly message instead of a crash.                                                 *@
+            <CustomErrorBoundary>
+                @Body
+            </CustomErrorBoundary>
         </article>
     </main>
 </div>

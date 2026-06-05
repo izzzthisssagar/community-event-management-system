@@ -1,0 +1,59 @@
+@inherits ErrorBoundary
+@using Microsoft.Extensions.Logging
+@using CommunityEventManagement.Domain.Exceptions
+@inject ILogger<CustomErrorBoundary> Logger
+
+@* This is my own global error boundary. It wraps the page content in MainLayout. If any component *@
+@* throws an exception while rendering or handling an event, this boundary catches it, logs it, and *@
+@* shows the user a friendly message with a "Try again" button instead of letting the whole app    *@
+@* crash. It understands my custom exceptions and turns each one into a clear, human message.       *@
+
+@if (CurrentException is not null)
+{
+    <div class="alert alert-danger m-3" role="alert">
+        <h4 class="alert-heading">Sorry, something went wrong</h4>
+        <p class="mb-3">@GetFriendlyMessage(CurrentException)</p>
+        <button class="btn btn-outline-danger" @onclick="RecoverAndContinue">Try again</button>
+    </div>
+}
+else
+{
+    @ChildContent
+}
+
+@code {
+    /// <summary>
+    /// Runs whenever an exception is caught. I log the full details for myself (the developer) but
+    /// the user only ever sees the friendly message above, never the raw stack trace.
+    /// </summary>
+    protected override Task OnErrorAsync(Exception exception)
+    {
+        Logger.LogError(exception, "An unhandled error was caught by the CustomErrorBoundary.");
+        return Task.CompletedTask;
+    }
+
+    // Clears the error and tries to render the content again.
+    private void RecoverAndContinue()
+    {
+        Recover();
+    }
+
+    /// <summary>
+    /// Turns an exception into a friendly message. I use pattern matching so each of my custom
+    /// exception types gets its own clear wording, and anything unexpected gets a safe default.
+    /// </summary>
+    private string GetFriendlyMessage(Exception exception)
+    {
+        return exception switch
+        {
+            DuplicateRegistrationException => "That participant is already registered for this event.",
+            VenueCapacityExceededException => "This event is already full, so no more registrations can be taken.",
+            EventNotFoundException => "Sorry, that event could not be found.",
+            EntityNotFoundException => "Sorry, the item you were looking for could not be found.",
+            // Any other exception from my own domain already has a sensible message, so show it.
+            EventManagementException domainException => domainException.Message,
+            // A completely unexpected error gets a safe, generic message.
+            _ => "An unexpected error occurred. Please try again."
+        };
+    }
+}

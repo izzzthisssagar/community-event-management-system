@@ -1,0 +1,87 @@
+@page "/admin/venues/create"
+@page "/admin/venues/edit/{Id:guid}"
+@attribute [Authorize(Roles = "Admin")]
+@inject IVenueService VenueService
+@inject NavigationManager Navigation
+
+<PageTitle>@(IsEdit ? "Edit Venue" : "Add Venue")</PageTitle>
+
+<h1 class="mb-4">@(IsEdit ? "Edit venue" : "Add venue")</h1>
+
+<div class="row">
+    <div class="col-md-6">
+        <EditForm Model="_model" OnValidSubmit="SaveAsync">
+            @* FluentValidationValidator wires my FluentValidation rules into this form. *@
+            <FluentValidationValidator />
+            <ValidationSummary class="text-danger" />
+
+            <div class="mb-3">
+                <label class="form-label">Name</label>
+                <InputText class="form-control" @bind-Value="_model.Name" />
+                <ValidationMessage For="() => _model.Name" class="text-danger" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Address</label>
+                <InputText class="form-control" @bind-Value="_model.Address" />
+                <ValidationMessage For="() => _model.Address" class="text-danger" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Capacity</label>
+                <InputNumber class="form-control" @bind-Value="_model.Capacity" />
+                <ValidationMessage For="() => _model.Capacity" class="text-danger" />
+            </div>
+
+            <div class="form-check mb-3">
+                <InputCheckbox class="form-check-input" id="accessible" @bind-Value="_model.IsAccessible" />
+                <label class="form-check-label" for="accessible">Has disabled access</label>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Save</button>
+            <a class="btn btn-secondary" href="admin/venues">Cancel</a>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public Guid? Id { get; set; }
+
+    private VenueViewModel _model = new();
+
+    // True when the page was opened with an Id in the URL, which means we are editing.
+    private bool IsEdit => Id.HasValue;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (IsEdit)
+        {
+            // Load the existing venue and copy its values into the form model.
+            Venue existingVenue = await VenueService.GetByIdAsync(Id!.Value);
+            _model = new VenueViewModel
+            {
+                Id = existingVenue.Id,
+                Name = existingVenue.Name,
+                Address = existingVenue.Address,
+                Capacity = existingVenue.Capacity,
+                IsAccessible = existingVenue.IsAccessible
+            };
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        if (IsEdit)
+        {
+            await VenueService.UpdateAsync(_model);
+        }
+        else
+        {
+            await VenueService.CreateAsync(_model);
+        }
+
+        // Go back to the list once the save has worked.
+        Navigation.NavigateTo("admin/venues");
+    }
+}

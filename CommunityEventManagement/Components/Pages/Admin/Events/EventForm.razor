@@ -1,0 +1,189 @@
+@page "/admin/events/create"
+@page "/admin/events/edit/{Id:guid}"
+@attribute [Authorize(Roles = "Admin")]
+@inject IEventService EventService
+@inject IVenueService VenueService
+@inject IActivityService ActivityService
+@inject NavigationManager Navigation
+
+<PageTitle>@(IsEdit ? "Edit Event" : "Add Event")</PageTitle>
+
+<h1 class="mb-4">@(IsEdit ? "Edit event" : "Add event")</h1>
+
+<EditForm Model="_model" OnValidSubmit="SaveAsync">
+    <FluentValidationValidator />
+    <ValidationSummary class="text-danger" />
+
+    <div class="row">
+        <div class="col-md-7">
+            <div class="mb-3">
+                <label class="form-label">Name</label>
+                <InputText class="form-control" @bind-Value="_model.Name" />
+                <ValidationMessage For="() => _model.Name" class="text-danger" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Date</label>
+                <InputDate class="form-control" @bind-Value="_model.Date" />
+                <ValidationMessage For="() => _model.Date" class="text-danger" />
+            </div>
+
+            <div class="row">
+                <div class="col mb-3">
+                    <label class="form-label">Start time</label>
+                    <input type="time" class="form-control" value="@StartTimeString" @onchange="OnStartTimeChanged" />
+                </div>
+                <div class="col mb-3">
+                    <label class="form-label">End time</label>
+                    <input type="time" class="form-control" value="@EndTimeString" @onchange="OnEndTimeChanged" />
+                    <ValidationMessage For="() => _model.EndTime" class="text-danger" />
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Description</label>
+                <InputTextArea class="form-control" rows="3" @bind-Value="_model.Description" />
+                <ValidationMessage For="() => _model.Description" class="text-danger" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Maximum capacity</label>
+                <InputNumber class="form-control" @bind-Value="_model.MaxCapacity" />
+                <ValidationMessage For="() => _model.MaxCapacity" class="text-danger" />
+            </div>
+        </div>
+
+        <div class="col-md-5">
+            <div class="mb-3">
+                <label class="form-label">Venues</label>
+                <div class="border rounded p-2" style="max-height: 180px; overflow-y: auto;">
+                    @foreach (Venue venue in _venues)
+                    {
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input"
+                                   checked="@_model.SelectedVenueIds.Contains(venue.Id)"
+                                   @onchange="(e) => ToggleVenue(venue.Id, (bool)(e.Value ?? false))" />
+                            <label class="form-check-label">@venue.Name</label>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Activities</label>
+                <div class="border rounded p-2" style="max-height: 180px; overflow-y: auto;">
+                    @foreach (Activity activity in _activities)
+                    {
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input"
+                                   checked="@_model.SelectedActivityIds.Contains(activity.Id)"
+                                   @onchange="(e) => ToggleActivity(activity.Id, (bool)(e.Value ?? false))" />
+                            <label class="form-check-label">@activity.Title</label>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Save</button>
+    <a class="btn btn-secondary" href="admin/events">Cancel</a>
+</EditForm>
+
+@code {
+    [Parameter]
+    public Guid? Id { get; set; }
+
+    private EventViewModel _model = new();
+    private List<Venue> _venues = new();
+    private List<Activity> _activities = new();
+
+    private bool IsEdit => Id.HasValue;
+
+    // Helper properties so the <input type="time"> controls can work with my TimeSpan values. The
+    // time input gives me text like "10:30", which I parse back into a TimeSpan.
+    private string StartTimeString => _model.StartTime.ToString(@"hh\:mm");
+    private string EndTimeString => _model.EndTime.ToString(@"hh\:mm");
+
+    // The time inputs give me text like "10:30". I parse that back into a TimeSpan and store it on
+    // the model. I use plain onchange handlers (rather than @bind) because the time input's typed
+    // binding does not line up with my TimeSpan property.
+    private void OnStartTimeChanged(ChangeEventArgs e)
+    {
+        if (TimeSpan.TryParse(e.Value?.ToString(), out TimeSpan tsParsed))
+        {
+            _model.StartTime = tsParsed;
+        }
+    }
+
+    private void OnEndTimeChanged(ChangeEventArgs e)
+    {
+        if (TimeSpan.TryParse(e.Value?.ToString(), out TimeSpan tsParsed))
+        {
+            _model.EndTime = tsParsed;
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Load the lists of venues and activities so the admin can tick the ones they want.
+        _venues = await VenueService.GetAllAsync();
+        _activities = await ActivityService.GetAllAsync();
+
+        if (IsEdit)
+        {
+            Event existingEvent = await EventService.GetEventByIdAsync(Id!.Value);
+            _model = new EventViewModel
+            {
+                Id = existingEvent.Id,
+                Name = existingEvent.Name,
+                Date = existingEvent.Date,
+                StartTime = existingEvent.StartTime,
+                EndTime = existingEvent.EndTime,
+                Description = existingEvent.Description,
+                MaxCapacity = existingEvent.MaxCapacity,
+                SelectedVenueIds = existingEvent.Venues.Select(v => v.Id).ToList(),
+                SelectedActivityIds = existingEvent.Activities.Select(a => a.Id).ToList()
+            };
+        }
+    }
+
+    // Adds or removes a venue id from the selected list when its checkbox changes.
+    private void ToggleVenue(Guid guidVenueId, bool bChecked)
+    {
+        if (bChecked && !_model.SelectedVenueIds.Contains(guidVenueId))
+        {
+            _model.SelectedVenueIds.Add(guidVenueId);
+        }
+        else if (!bChecked)
+        {
+            _model.SelectedVenueIds.Remove(guidVenueId);
+        }
+    }
+
+    private void ToggleActivity(Guid guidActivityId, bool bChecked)
+    {
+        if (bChecked && !_model.SelectedActivityIds.Contains(guidActivityId))
+        {
+            _model.SelectedActivityIds.Add(guidActivityId);
+        }
+        else if (!bChecked)
+        {
+            _model.SelectedActivityIds.Remove(guidActivityId);
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        if (IsEdit)
+        {
+            await EventService.UpdateEventAsync(_model);
+        }
+        else
+        {
+            await EventService.CreateEventAsync(_model);
+        }
+
+        Navigation.NavigateTo("admin/events");
+    }
+}
