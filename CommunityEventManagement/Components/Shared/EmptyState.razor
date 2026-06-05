@@ -1,0 +1,19 @@
+@* Shown in place of a list or table when there is nothing to display yet. It gives a friendly icon
+   and message instead of a blank screen, and can optionally show an action button. *@
+
+<div class="empty-state">
+    <div class="empty-state__icon">
+        <Icon Name="@IconName" Size="30" />
+    </div>
+    <p class="empty-state__message">@Message</p>
+    @if (Action is not null)
+    {
+        <div class="empty-state__action">@Action</div>
+    }
+</div>
+
+@code {
+    [Parameter] public string IconName { get; set; } = "inbox";
+    [Parameter] public string Message { get; set; } = "Nothing here yet.";
+    [Parameter] public RenderFragment? Action { get; set; }
+}

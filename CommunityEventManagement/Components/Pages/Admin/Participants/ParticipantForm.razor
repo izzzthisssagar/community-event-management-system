@@ -6,41 +6,48 @@
 
 <PageTitle>@(IsEdit ? "Edit Participant" : "Add Participant")</PageTitle>
 
-<h1 class="mb-4">@(IsEdit ? "Edit participant" : "Add participant")</h1>
+<PageHeader Title="@(IsEdit ? "Edit participant" : "Add participant")" Subtitle="Someone who can register for events." />
 
 <div class="row">
-    <div class="col-md-6">
-        <EditForm Model="_model" OnValidSubmit="SaveAsync">
-            <FluentValidationValidator />
-            <ValidationSummary class="text-danger" />
+    <div class="col-lg-7 col-xl-6">
+        <div class="card">
+            <div class="card-body p-4">
+                <EditForm Model="_model" OnValidSubmit="SaveAsync">
+                    <FluentValidationValidator />
+                    <ValidationSummary class="text-danger" />
 
-            <div class="mb-3">
-                <label class="form-label">First name</label>
-                <InputText class="form-control" @bind-Value="_model.FirstName" />
-                <ValidationMessage For="() => _model.FirstName" class="text-danger" />
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">First name</label>
+                            <InputText class="form-control" @bind-Value="_model.FirstName" />
+                            <ValidationMessage For="() => _model.FirstName" class="text-danger" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Last name</label>
+                            <InputText class="form-control" @bind-Value="_model.LastName" />
+                            <ValidationMessage For="() => _model.LastName" class="text-danger" />
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <InputText class="form-control" @bind-Value="_model.Email" />
+                        <ValidationMessage For="() => _model.Email" class="text-danger" />
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">Phone number</label>
+                        <InputText class="form-control" @bind-Value="_model.PhoneNumber" />
+                        <ValidationMessage For="() => _model.PhoneNumber" class="text-danger" />
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary"><Icon Name="check-circle" Size="16" /> Save</button>
+                        <a class="btn btn-outline-secondary" href="admin/participants">Cancel</a>
+                    </div>
+                </EditForm>
             </div>
-
-            <div class="mb-3">
-                <label class="form-label">Last name</label>
-                <InputText class="form-control" @bind-Value="_model.LastName" />
-                <ValidationMessage For="() => _model.LastName" class="text-danger" />
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Email</label>
-                <InputText class="form-control" @bind-Value="_model.Email" />
-                <ValidationMessage For="() => _model.Email" class="text-danger" />
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Phone number</label>
-                <InputText class="form-control" @bind-Value="_model.PhoneNumber" />
-                <ValidationMessage For="() => _model.PhoneNumber" class="text-danger" />
-            </div>
-
-            <button type="submit" class="btn btn-primary">Save</button>
-            <a class="btn btn-secondary" href="admin/participants">Cancel</a>
-        </EditForm>
+        </div>
     </div>
 </div>
 

@@ -1,9 +1,12 @@
 @* The navigation menu. I use AuthorizeView so the links change depending on who is signed in:    *@
-@* everyone signed in can browse events, but only an Admin sees the management links.               *@
+@* everyone signed in can browse events, but only an Admin sees the management links. Each link     *@
+@* shows a meaningful icon from my shared Icon component so the menu reads at a glance.             *@
 
 <div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
-        <a class="navbar-brand" href="">Community Events</a>
+        <a class="navbar-brand d-flex align-items-center gap-2" href="">
+            <Icon Name="ticket" Size="20" /> Community Events
+        </a>
     </div>
 </div>
 
@@ -13,7 +16,7 @@
     <nav class="nav flex-column">
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
+                <Icon Name="home" Size="18" /> Home
             </NavLink>
         </div>
 
@@ -22,41 +25,41 @@
                 @* Links for any signed-in user. *@
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="events">
-                        <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Browse Events
+                        <Icon Name="list" Size="18" /> Browse Events
                     </NavLink>
                 </div>
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="my-registrations">
-                        <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Registrations
+                        <Icon Name="ticket" Size="18" /> Registrations
                     </NavLink>
                 </div>
 
                 @* Admin-only management links. *@
                 <AuthorizeView Roles="Admin" Context="adminContext">
-                    <hr class="text-white-50 my-2" />
+                    <div class="nav-section-label">Management</div>
                     <div class="nav-item px-3">
                         <NavLink class="nav-link" href="admin" Match="NavLinkMatch.All">
-                            <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Admin Dashboard
+                            <Icon Name="dashboard" Size="18" /> Admin Dashboard
                         </NavLink>
                     </div>
                     <div class="nav-item px-3">
                         <NavLink class="nav-link" href="admin/events">
-                            <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Manage Events
+                            <Icon Name="calendar" Size="18" /> Manage Events
                         </NavLink>
                     </div>
                     <div class="nav-item px-3">
                         <NavLink class="nav-link" href="admin/venues">
-                            <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Manage Venues
+                            <Icon Name="map-pin" Size="18" /> Manage Venues
                         </NavLink>
                     </div>
                     <div class="nav-item px-3">
                         <NavLink class="nav-link" href="admin/activities">
-                            <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Manage Activities
+                            <Icon Name="activity" Size="18" /> Manage Activities
                         </NavLink>
                     </div>
                     <div class="nav-item px-3">
                         <NavLink class="nav-link" href="admin/participants">
-                            <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Manage Participants
+                            <Icon Name="users" Size="18" /> Manage Participants
                         </NavLink>
                     </div>
                 </AuthorizeView>

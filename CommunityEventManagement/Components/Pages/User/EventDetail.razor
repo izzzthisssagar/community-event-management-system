@@ -8,66 +8,77 @@
 
 @if (_event is null)
 {
-    <p>Loading event...</p>
+    <LoadingSpinner Text="Loading event..." />
 }
 else
 {
-    <div class="d-flex align-items-center mb-3">
-        <h1 class="me-2 mb-0">@_event.Name</h1>
+    <a class="btn btn-link ps-0 mb-2 d-inline-flex align-items-center gap-1" href="events">
+        <Icon Name="arrow-left" Size="16" /> Back to events
+    </a>
+
+    <div class="d-flex align-items-center flex-wrap gap-2 mb-3">
+        <h1 class="mb-0">@_event.Name</h1>
         @if (_event.IsCancelled)
         {
-            <span class="badge bg-danger">Cancelled</span>
+            <StatusBadge Status="Cancelled" />
         }
     </div>
 
-    <a class="btn btn-link ps-0 mb-3" href="events">&larr; Back to events</a>
-
-    <div class="row">
+    <div class="row g-4">
         <div class="col-md-7">
-            <p class="text-muted">
-                @_event.Date.ToString("dddd, dd MMMM yyyy")
-                &middot; @_event.StartTime.ToString(@"hh\:mm")–@_event.EndTime.ToString(@"hh\:mm")
-            </p>
-            <p>@_event.Description</p>
+            <div class="card">
+                <div class="card-body p-4">
+                    <p class="text-muted d-flex align-items-center gap-2 mb-1">
+                        <Icon Name="calendar" Size="16" /> @_event.Date.ToString("dddd, dd MMMM yyyy")
+                    </p>
+                    <p class="text-muted d-flex align-items-center gap-2">
+                        <Icon Name="clock" Size="16" /> @_event.StartTime.ToString(@"hh\:mm")–@_event.EndTime.ToString(@"hh\:mm")
+                    </p>
+                    <p class="mt-3">@_event.Description</p>
 
-            <h5 class="mt-4">Venues</h5>
-            @if (_event.Venues.Count == 0)
-            {
-                <p class="text-muted">No venues assigned.</p>
-            }
-            else
-            {
-                <ul>
-                    @foreach (Venue venue in _event.Venues)
+                    <h5 class="mt-4 d-flex align-items-center gap-2"><Icon Name="map-pin" Size="18" /> Venues</h5>
+                    @if (_event.Venues.Count == 0)
                     {
-                        <li>@venue.Name — @venue.Address (capacity @venue.Capacity@(venue.IsAccessible ? ", accessible" : ""))</li>
+                        <p class="text-muted">No venues assigned.</p>
                     }
-                </ul>
-            }
+                    else
+                    {
+                        <ul class="mb-0">
+                            @foreach (Venue venue in _event.Venues)
+                            {
+                                <li>@venue.Name — @venue.Address (capacity @venue.Capacity@(venue.IsAccessible ? ", accessible" : ""))</li>
+                            }
+                        </ul>
+                    }
 
-            <h5 class="mt-4">Activities</h5>
-            @if (_event.Activities.Count == 0)
-            {
-                <p class="text-muted">No activities assigned.</p>
-            }
-            else
-            {
-                <ul>
-                    @foreach (Activity activity in _event.Activities)
+                    <h5 class="mt-4 d-flex align-items-center gap-2"><Icon Name="activity" Size="18" /> Activities</h5>
+                    @if (_event.Activities.Count == 0)
                     {
-                        @* GetActivityDetails() is polymorphic — each subclass returns its own text. *@
-                        <li>@activity.GetActivityDetails()</li>
+                        <p class="text-muted">No activities assigned.</p>
                     }
-                </ul>
-            }
+                    else
+                    {
+                        <ul class="mb-0">
+                            @foreach (Activity activity in _event.Activities)
+                            {
+                                @* GetActivityDetails() is polymorphic — each subclass returns its own text. *@
+                                <li>@activity.GetActivityDetails()</li>
+                            }
+                        </ul>
+                    }
+                </div>
+            </div>
         </div>
 
         <div class="col-md-5">
             <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Register a participant</h5>
-                    <p class="mb-1"><strong>Capacity:</strong> @_event.MaxCapacity</p>
-                    <p><strong>Seats left:</strong> @_event.GetAvailableSeats()</p>
+                <div class="card-body p-4">
+                    <h5 class="card-title d-flex align-items-center gap-2"><Icon Name="ticket" Size="18" /> Register a participant</h5>
+
+                    <div class="d-flex justify-content-between text-muted small mt-3 mb-3">
+                        <span>Capacity: <strong class="text-dark">@_event.MaxCapacity</strong></span>
+                        <span>Seats left: <strong class="text-dark">@_event.GetAvailableSeats()</strong></span>
+                    </div>
 
                     @if (_successMessage is not null)
                     {
@@ -84,7 +95,7 @@ else
                     }
                     else
                     {
-                        <div class="mb-2">
+                        <div class="mb-3">
                             <label class="form-label">Choose participant</label>
                             <select class="form-select" @bind="_selectedParticipantId">
                                 <option value="@Guid.Empty">-- select --</option>
@@ -94,7 +105,9 @@ else
                                 }
                             </select>
                         </div>
-                        <button class="btn btn-primary w-100" @onclick="RegisterParticipant">Register</button>
+                        <button class="btn btn-primary w-100" @onclick="RegisterParticipant">
+                            <Icon Name="check-circle" Size="16" /> Register
+                        </button>
                     }
                 </div>
             </div>

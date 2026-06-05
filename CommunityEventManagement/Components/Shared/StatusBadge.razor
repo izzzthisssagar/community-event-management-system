@@ -1,0 +1,32 @@
+@* A coloured status pill with a small icon. It works out the right colour and icon from the status
+   text, so every status in the app looks the same wherever it appears. *@
+
+<span class="status-badge status-badge--@GetVariant()">
+    <Icon Name="@GetIcon()" Size="13" />
+    <span>@DisplayText</span>
+</span>
+
+@code {
+    // The status text, e.g. "Active", "Confirmed", "Cancelled", "Pending".
+    [Parameter] public string Status { get; set; } = string.Empty;
+
+    private string DisplayText => string.IsNullOrWhiteSpace(Status) ? "Unknown" : Status;
+
+    // Picks the colour variant from the status text.
+    private string GetVariant() => Status.ToLowerInvariant() switch
+    {
+        "active" or "confirmed" => "success",
+        "cancelled" => "muted",
+        "pending" or "waitlisted" => "warning",
+        _ => "muted"
+    };
+
+    // Picks the matching icon from the status text.
+    private string GetIcon() => Status.ToLowerInvariant() switch
+    {
+        "active" or "confirmed" => "check-circle",
+        "cancelled" => "ban",
+        "pending" or "waitlisted" => "clock",
+        _ => "check-circle"
+    };
+}

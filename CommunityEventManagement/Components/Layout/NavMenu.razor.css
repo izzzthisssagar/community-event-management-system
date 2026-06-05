@@ -89,6 +89,26 @@
     color: #ffffff;
 }
 
+.nav-item ::deep .cem-icon {
+    margin-right: 0.7rem;
+    flex-shrink: 0;
+    opacity: 0.95;
+}
+
+.navbar-brand ::deep .cem-icon {
+    color: #f9a23c;
+}
+
+/* Small uppercase divider label between the user links and the admin links. */
+.nav-section-label {
+    color: rgba(255, 255, 255, 0.45);
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 1rem 1.55rem 0.4rem;
+}
+
 .nav-scrollable {
     display: none;
 }

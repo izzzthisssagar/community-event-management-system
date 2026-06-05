@@ -7,44 +7,20 @@
 
 <PageTitle>Admin Dashboard</PageTitle>
 
-<h1 class="mb-4">Admin Dashboard</h1>
+<PageHeader Title="Admin Dashboard" Subtitle="An overview of everything in the system." />
 
 <div class="row g-3">
-    <div class="col-md-3">
-        <div class="card text-bg-primary">
-            <div class="card-body">
-                <h5 class="card-title">Events</h5>
-                <p class="display-6 mb-2">@_eventCount</p>
-                <a class="btn btn-light btn-sm" href="admin/events">Manage</a>
-            </div>
-        </div>
+    <div class="col-sm-6 col-xl-3">
+        <StatCard Title="Events" Count="_eventCount" IconName="calendar" Href="admin/events" Variant="primary" />
     </div>
-    <div class="col-md-3">
-        <div class="card text-bg-success">
-            <div class="card-body">
-                <h5 class="card-title">Venues</h5>
-                <p class="display-6 mb-2">@_venueCount</p>
-                <a class="btn btn-light btn-sm" href="admin/venues">Manage</a>
-            </div>
-        </div>
+    <div class="col-sm-6 col-xl-3">
+        <StatCard Title="Venues" Count="_venueCount" IconName="map-pin" Href="admin/venues" Variant="success" />
     </div>
-    <div class="col-md-3">
-        <div class="card text-bg-info">
-            <div class="card-body">
-                <h5 class="card-title">Activities</h5>
-                <p class="display-6 mb-2">@_activityCount</p>
-                <a class="btn btn-light btn-sm" href="admin/activities">Manage</a>
-            </div>
-        </div>
+    <div class="col-sm-6 col-xl-3">
+        <StatCard Title="Activities" Count="_activityCount" IconName="activity" Href="admin/activities" Variant="info" />
     </div>
-    <div class="col-md-3">
-        <div class="card text-bg-warning">
-            <div class="card-body">
-                <h5 class="card-title">Participants</h5>
-                <p class="display-6 mb-2">@_participantCount</p>
-                <a class="btn btn-light btn-sm" href="admin/participants">Manage</a>
-            </div>
-        </div>
+    <div class="col-sm-6 col-xl-3">
+        <StatCard Title="Participants" Count="_participantCount" IconName="users" Href="admin/participants" Variant="warning" />
     </div>
 </div>
 
