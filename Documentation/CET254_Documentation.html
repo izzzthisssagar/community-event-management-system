@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>CET254 Assignment 1 — Community Event Management System</title>
+<style>
+    body { font-family: 'Calibri', 'Segoe UI', Arial, sans-serif; font-size: 11pt; color: #1a1a1a; line-height: 1.5; margin: 2.5cm; }
+    h1 { font-size: 24pt; color: #1f3864; }
+    h2 { font-size: 16pt; color: #1f4e79; border-bottom: 2px solid #cfd8e6; padding-bottom: 4px; margin-top: 28px; }
+    h3 { font-size: 13pt; color: #2e5496; margin-top: 18px; }
+    table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 10pt; }
+    th, td { border: 1px solid #9aa7bd; padding: 6px 8px; text-align: left; vertical-align: top; }
+    th { background: #1f4e79; color: #fff; }
+    tr:nth-child(even) td { background: #eef2f8; }
+    code { font-family: 'Consolas', monospace; background: #f0f0f0; padding: 1px 4px; border-radius: 3px; font-size: 9.5pt; }
+    .title-page { text-align: center; margin-top: 120px; }
+    .title-page .sub { font-size: 14pt; color: #444; margin-top: 8px; }
+    .meta { margin-top: 60px; font-size: 13pt; }
+    img { max-width: 100%; border: 1px solid #ccc; }
+    .pass { color: #1a7d33; font-weight: bold; }
+    .placeholder { background: #fff7e6; border: 1px dashed #e0a800; padding: 8px; font-style: italic; }
+    .pagebreak { page-break-before: always; }
+</style>
+</head>
+<body>
+
+<div class="title-page">
+    <h1>Community Event Management System</h1>
+    <div class="sub">CET254 Advanced Programming &mdash; Assignment 1</div>
+    <div class="meta">
+        <p><strong>Student:</strong> Sagar Thapa</p>
+        <p><strong>Student ID:</strong> bi95ss</p>
+        <p><strong>Module:</strong> CET254 Advanced Programming</p>
+        <p><strong>University of Sunderland</strong></p>
+    </div>
+</div>
+
+<div class="pagebreak"></div>
+<h2>1. Introduction</h2>
+<p>
+    This document supports my submission for CET254 Assignment 1. I have built a
+    <strong>Community Event Management System</strong> as a web application that lets an
+    organisation manage community events, the venues those events take place at, the activities
+    that make up each event, the participants who attend, and the registrations that link
+    participants to events. An administrator can manage all of the data, and signed-in users can
+    browse upcoming events and register participants for them.
+</p>
+<p>
+    The application is built with <strong>.NET 10</strong> using a <strong>Blazor Web App</strong>
+    (Interactive Server render mode), <strong>Entity Framework Core 9</strong> with a
+    <strong>MySQL</strong> database (via the Pomelo provider), and cookie-based authentication. It
+    is organised into clear layers (Domain, Infrastructure, Application and Presentation) to keep
+    the responsibilities separated.
+</p>
+
+<h2>2. System Architecture</h2>
+<p>I deliberately split the project into four layers so each part has one job:</p>
+<table>
+    <tr><th>Layer</th><th>Responsibility</th><th>Key contents</th></tr>
+    <tr><td>Domain</td><td>The core model with no outside dependencies</td><td>Entities, the <code>ICancelable</code> interface, repository interfaces, custom exceptions</td></tr>
+    <tr><td>Infrastructure</td><td>Talking to the database</td><td><code>ApplicationDbContext</code>, Fluent API configurations, the seeder, repository implementations</td></tr>
+    <tr><td>Application</td><td>Business logic</td><td>Services (with interfaces) and FluentValidation validators</td></tr>
+    <tr><td>Presentation</td><td>The user interface and entry points</td><td>Blazor components, the MVC <code>AuthController</code>, view models</td></tr>
+</table>
+
+<h2 class="pagebreak">3. UML Class Diagram</h2>
+<p>
+    The class diagram below shows the object-oriented design. Every entity inherits from the
+    abstract <code>BaseEntity</code>. The <code>ICancelable</code> interface is implemented by both
+    <code>Event</code> and <code>Registration</code> (interface polymorphism), and the abstract
+    <code>Activity</code> class has three concrete subclasses (inheritance polymorphism). The two
+    many-to-many relationships and the <code>Registration</code> association class are also shown.
+</p>
+<img src="class-diagram.png" alt="UML Class Diagram" />
+
+<h2 class="pagebreak">4. Entity Relationship Diagram</h2>
+<p>
+    The ERD shows the database tables Entity Framework Core generates. All three activity types are
+    stored in the single <code>ACTIVITIES</code> table using Table-Per-Hierarchy, with an
+    <code>ActivityType</code> discriminator column and nullable columns for the subclass fields.
+    The many-to-many links are resolved by the <code>EVENTVENUES</code> and
+    <code>EVENTACTIVITIES</code> junction tables, and <code>REGISTRATIONS</code> is the join entity
+    between events and participants.
+</p>
+<img src="erd.png" alt="Entity Relationship Diagram" />
+
+<h2 class="pagebreak">5. Object-Oriented Programming Features</h2>
+<table>
+    <tr><th>Feature</th><th>Where it is in my code</th></tr>
+    <tr><td>Inheritance</td><td>Every entity inherits from the abstract <code>BaseEntity</code>; <code>WorkshopActivity</code>, <code>GameActivity</code> and <code>TalkActivity</code> inherit from the abstract <code>Activity</code>.</td></tr>
+    <tr><td>Interface polymorphism</td><td><code>ICancelable</code> is implemented by both <code>Event</code> and <code>Registration</code>, each with its own <code>Cancel()</code> behaviour.</td></tr>
+    <tr><td>Inheritance polymorphism</td><td>The abstract method <code>GetActivityDetails()</code> is overridden differently by each <code>Activity</code> subclass.</td></tr>
+    <tr><td>Encapsulation</td><td>Entities use private <code>List&lt;T&gt;</code> backing fields exposed as <code>IReadOnlyCollection&lt;T&gt;</code>; business rules live inside the entities (for example <code>Event.AddRegistration()</code>).</td></tr>
+    <tr><td>Constructors</td><td>Every entity has dual constructors: a public one for my code and a private parameterless one for EF Core.</td></tr>
+    <tr><td>Method overloading</td><td><code>EventService.GetEventsAsync()</code> has three overloads that share a name but take different parameters.</td></tr>
+</table>
+
+<h2>6. Data Structures and Design Patterns</h2>
+<table>
+    <tr><th>Pattern / technique</th><th>How I used it</th></tr>
+    <tr><td>Repository pattern</td><td>An entity-specific repository behind an interface for each entity, so the services never touch EF Core directly.</td></tr>
+    <tr><td>Factory pattern (DbContext)</td><td><code>IDbContextFactory</code> hands a fresh, short-lived <code>DbContext</code> to every operation, which is the safe approach for Blazor Server.</td></tr>
+    <tr><td>Fluent API configuration</td><td>A separate <code>IEntityTypeConfiguration&lt;T&gt;</code> class per entity, instead of data annotations.</td></tr>
+    <tr><td>Table-Per-Hierarchy</td><td>The <code>Activity</code> hierarchy is mapped to one table with a discriminator.</td></tr>
+    <tr><td>Dynamic <code>IQueryable</code> search</td><td>The browse page builds its query from only the filters the user chose, debounced by 400ms so it does not query on every keystroke.</td></tr>
+    <tr><td>Dependency Injection</td><td>Every repository, service and validator is registered against its interface in <code>Program.cs</code>.</td></tr>
+</table>
+
+<h2>7. Validation and Exception Handling</h2>
+<p>
+    I use <strong>FluentValidation</strong> for form validation. The main advantage over data
+    annotations is cross-property rules &mdash; for example, <code>EventValidator</code> checks that
+    the end time is after the start time, and <code>ActivityValidator</code> uses conditional
+    <code>When(...)</code> rules so subclass fields are only required for the matching type.
+</p>
+<p>
+    I also built a custom exception hierarchy with <code>EventManagementException</code> as the base
+    and specific exceptions such as <code>DuplicateRegistrationException</code> and
+    <code>VenueCapacityExceededException</code>. A <code>CustomErrorBoundary</code> wraps the page
+    content, logs any error, and shows the user a friendly message instead of a crash.
+</p>
+
+<h2 class="pagebreak">8. Test Plan and Results</h2>
+<p>
+    All 13 automated tests pass. They use xUnit, with repository tests running against a real
+    in-memory SQLite database, service tests using Moq, and component tests using bUnit.
+</p>
+<table>
+    <tr><th>#</th><th>Test</th><th>Type</th><th>Expected result</th><th>Status</th></tr>
+    <tr><td>1</td><td>Add event with venue and activity</td><td>Repository (SQLite)</td><td>Event saved with its links</td><td class="pass">Pass</td></tr>
+    <tr><td>2</td><td>Get event by unknown id</td><td>Repository (SQLite)</td><td>Returns null</td><td class="pass">Pass</td></tr>
+    <tr><td>3</td><td>Filter events by date</td><td>Repository (SQLite)</td><td>Only matching date returned</td><td class="pass">Pass</td></tr>
+    <tr><td>4</td><td>Filter events by venue</td><td>Repository (SQLite)</td><td>Only matching venue returned</td><td class="pass">Pass</td></tr>
+    <tr><td>5</td><td>Duplicate registration unique index</td><td>Repository (SQLite)</td><td>Database rejects the duplicate</td><td class="pass">Pass</td></tr>
+    <tr><td>6</td><td>Register participant (happy path)</td><td>Service (Moq)</td><td>Registration created and saved once</td><td class="pass">Pass</td></tr>
+    <tr><td>7</td><td>Register same participant twice</td><td>Service (Moq)</td><td>DuplicateRegistrationException</td><td class="pass">Pass</td></tr>
+    <tr><td>8</td><td>Register when event is full</td><td>Service (Moq)</td><td>VenueCapacityExceededException</td><td class="pass">Pass</td></tr>
+    <tr><td>9</td><td>Cancel event</td><td>Service (Moq)</td><td>IsCancelled set with reason</td><td class="pass">Pass</td></tr>
+    <tr><td>10</td><td>GetEventsAsync overload</td><td>Service (Moq)</td><td>Returns all events</td><td class="pass">Pass</td></tr>
+    <tr><td>11</td><td>Event list renders cards</td><td>Component (bUnit)</td><td>One card per event</td><td class="pass">Pass</td></tr>
+    <tr><td>12</td><td>Event detail shows name</td><td>Component (bUnit)</td><td>Event name shown</td><td class="pass">Pass</td></tr>
+    <tr><td>13</td><td>Register with no participant chosen</td><td>Component (bUnit)</td><td>Friendly error, no registration</td><td class="pass">Pass</td></tr>
+</table>
+<p>To run the tests: <code>dotnet test</code> &mdash; expected output <code>Passed! - Failed: 0, Passed: 13</code>.</p>
+<p class="placeholder">[Paste a screenshot of the Visual Studio Test Explorer showing all 13 tests green here.]</p>
+
+<h2>9. How to Run the Application</h2>
+<ol>
+    <li>Start MySQL (this project was developed against XAMPP MySQL / MariaDB 10.4).</li>
+    <li>Check the connection string in <code>CommunityEventManagement/appsettings.json</code>.</li>
+    <li>Run <code>dotnet run --project CommunityEventManagement</code>. On first run the database is
+        created, migrated and seeded automatically.</li>
+    <li>Log in with the seeded admin account: <code>admin@events.com</code> / <code>Admin123!</code>.</li>
+</ol>
+<p class="placeholder">[Optional: paste screenshots of the running application &mdash; login page,
+admin event list, the browse/search page and a successful registration &mdash; here.]</p>
+
+</body>
+</html>
