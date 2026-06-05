@@ -57,14 +57,17 @@ public class EventRepository : IEventRepository
     {
         using ApplicationDbContext context = await _dcfContextFactory.CreateDbContextAsync();
 
-        // I compare only the Date part so the time of day does not matter.
-        return await context.Events
+        // I compare only the Date part so the time of day does not matter. I fetch the matching
+        // events first and then order them by start time in memory (with OrderBy after ToListAsync),
+        // because ordering by a TimeSpan column is not supported by every database provider.
+        List<Event> matchingEvents = await context.Events
             .Include(e => e.Venues)
             .Include(e => e.Activities)
             .AsNoTracking()
             .Where(e => e.Date.Date == dtDate.Date)
-            .OrderBy(e => e.StartTime)
             .ToListAsync();
+
+        return matchingEvents.OrderBy(e => e.StartTime).ToList();
     }
 
     public async Task<List<Event>> GetUpcomingAsync()
