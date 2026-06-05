@@ -1,5 +1,6 @@
 using CommunityEventManagement.Application.Services;
 using CommunityEventManagement.Domain.Entities;
+using CommunityEventManagement.Domain.Exceptions;
 using CommunityEventManagement.Domain.Interfaces;
 using Moq;
 
@@ -51,5 +52,16 @@ public class EventServiceTests
 
         // Assert
         Assert.Equal(2, results.Count);
+    }
+
+    [Fact]
+    public async Task GetEventByIdAsync_WhenTheEventDoesNotExist_ThrowsEventNotFoundException()
+    {
+        // Arrange — the repository finds nothing.
+        _mockEventRepository.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync((Event?)null);
+
+        // Act & Assert — the service turns the missing event into my custom exception.
+        await Assert.ThrowsAsync<EventNotFoundException>(async () =>
+            await _eventService.GetEventByIdAsync(Guid.NewGuid()));
     }
 }

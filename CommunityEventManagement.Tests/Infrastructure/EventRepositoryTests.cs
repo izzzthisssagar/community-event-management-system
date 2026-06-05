@@ -115,6 +115,61 @@ public class EventRepositoryTests : IDisposable
     }
 
     [Fact]
+    public async Task SearchAsync_FilterByActivityType_UsesTheTphDiscriminator()
+    {
+        // Arrange — a Workshop activity, and two events where only one includes it.
+        Guid guidWorkshopId;
+        using (ApplicationDbContext context = _factory.CreateDbContext())
+        {
+            WorkshopActivity workshop = new WorkshopActivity("Pottery", 90, "Jane", "Clay");
+            context.Activities.Add(workshop);
+            await context.SaveChangesAsync();
+            guidWorkshopId = workshop.Id;
+        }
+
+        await _eventRepository.AddAsync(
+            new Event("Has Workshop", DateTime.Today.AddDays(2), new TimeSpan(9, 0, 0), new TimeSpan(11, 0, 0), "x", 50),
+            Array.Empty<Guid>(), new[] { guidWorkshopId });
+        await _eventRepository.AddAsync(
+            new Event("No Workshop", DateTime.Today.AddDays(2), new TimeSpan(9, 0, 0), new TimeSpan(11, 0, 0), "y", 50),
+            Array.Empty<Guid>(), Array.Empty<Guid>());
+
+        // Act — filter by the activity type, which reads the TPH discriminator column.
+        List<Event> results = await _eventRepository.SearchAsync(null, null, null, "Workshop");
+
+        // Assert — only the event that includes a workshop is returned.
+        Assert.Single(results);
+        Assert.Equal("Has Workshop", results[0].Name);
+    }
+
+    [Fact]
+    public async Task DeleteAsync_RemovesTheEventAndCascadesToItsRegistrations()
+    {
+        // Arrange — an event with a participant registered for it.
+        RegistrationRepository registrationRepository = new RegistrationRepository(_factory);
+        Event newEvent = new Event("Doomed", DateTime.Today.AddDays(1), new TimeSpan(9, 0, 0), new TimeSpan(10, 0, 0), "x", 50);
+        await _eventRepository.AddAsync(newEvent, Array.Empty<Guid>(), Array.Empty<Guid>());
+
+        Guid guidParticipantId;
+        using (ApplicationDbContext context = _factory.CreateDbContext())
+        {
+            Participant participant = new Participant("Sam", "Lee", "sam@b.com", "0700");
+            context.Participants.Add(participant);
+            await context.SaveChangesAsync();
+            guidParticipantId = participant.Id;
+        }
+        await registrationRepository.AddAsync(new Registration(newEvent.Id, guidParticipantId, "Confirmed"));
+
+        // Act — delete the event.
+        await _eventRepository.DeleteAsync(newEvent.Id);
+
+        // Assert — the event is gone, and its registration was cascade-deleted with it.
+        using ApplicationDbContext check = _factory.CreateDbContext();
+        Assert.Empty(check.Events);
+        Assert.Empty(check.Registrations);
+    }
+
+    [Fact]
     public async Task Registration_WithDuplicateEventAndParticipant_ViolatesUniqueIndex()
     {
         // Arrange — one event and one participant in the database.
