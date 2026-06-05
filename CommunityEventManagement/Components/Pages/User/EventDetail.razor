@@ -105,9 +105,9 @@ else
                                 }
                             </select>
                         </div>
-                        <button class="btn btn-primary w-100" @onclick="RegisterParticipant">
+                        <LoadingButton CssClass="btn btn-primary w-100" Busy="_isRegistering" OnClick="RegisterParticipant">
                             <Icon Name="check-circle" Size="16" /> Register
-                        </button>
+                        </LoadingButton>
                     }
                 </div>
             </div>
@@ -124,6 +124,7 @@ else
     private Guid _selectedParticipantId = Guid.Empty;
     private string? _successMessage;
     private string? _errorMessage;
+    private bool _isRegistering;
 
     protected override async Task OnInitializedAsync()
     {
@@ -148,6 +149,7 @@ else
             return;
         }
 
+        _isRegistering = true;
         try
         {
             await RegistrationService.RegisterAsync(EventId, _selectedParticipantId);
@@ -163,6 +165,10 @@ else
             // EventManagementException and already carry a clear message, so I show it gracefully
             // here instead of letting it crash the page.
             _errorMessage = ex.Message;
+        }
+        finally
+        {
+            _isRegistering = false;
         }
     }
 }

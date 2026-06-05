@@ -5,6 +5,7 @@
 @inject IVenueService VenueService
 @inject IActivityService ActivityService
 @inject NavigationManager Navigation
+@inject IToastService ToastService
 
 <PageTitle>@(IsEdit ? "Edit Event" : "Add Event")</PageTitle>
 
@@ -89,7 +90,7 @@
             </div>
 
             <div class="d-flex gap-2 mt-2">
-                <button type="submit" class="btn btn-primary"><Icon Name="check-circle" Size="16" /> Save</button>
+                <LoadingButton Type="submit" Busy="_isBusy" CssClass="btn btn-primary"><Icon Name="check-circle" Size="16" /> Save</LoadingButton>
                 <a class="btn btn-outline-secondary" href="admin/events">Cancel</a>
             </div>
         </EditForm>
@@ -103,6 +104,7 @@
     private EventViewModel _model = new();
     private List<Venue> _venues = new();
     private List<Activity> _activities = new();
+    private bool _isBusy;
 
     private bool IsEdit => Id.HasValue;
 
@@ -178,15 +180,29 @@
 
     private async Task SaveAsync()
     {
-        if (IsEdit)
+        _isBusy = true;
+        try
         {
-            await EventService.UpdateEventAsync(_model);
-        }
-        else
-        {
-            await EventService.CreateEventAsync(_model);
-        }
+            if (IsEdit)
+            {
+                await EventService.UpdateEventAsync(_model);
+                ToastService.ShowSuccess("Event updated.");
+            }
+            else
+            {
+                await EventService.CreateEventAsync(_model);
+                ToastService.ShowSuccess("Event created.");
+            }
 
-        Navigation.NavigateTo("admin/events");
+            Navigation.NavigateTo("admin/events");
+        }
+        catch (EventManagementException ex)
+        {
+            ToastService.ShowError(ex.Message);
+        }
+        finally
+        {
+            _isBusy = false;
+        }
     }
 }

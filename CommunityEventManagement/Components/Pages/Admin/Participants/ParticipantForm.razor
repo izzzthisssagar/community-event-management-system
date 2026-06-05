@@ -3,6 +3,7 @@
 @attribute [Authorize(Roles = "Admin")]
 @inject IParticipantService ParticipantService
 @inject NavigationManager Navigation
+@inject IToastService ToastService
 
 <PageTitle>@(IsEdit ? "Edit Participant" : "Add Participant")</PageTitle>
 
@@ -42,7 +43,7 @@
                     </div>
 
                     <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary"><Icon Name="check-circle" Size="16" /> Save</button>
+                        <LoadingButton Type="submit" Busy="_isBusy" CssClass="btn btn-primary"><Icon Name="check-circle" Size="16" /> Save</LoadingButton>
                         <a class="btn btn-outline-secondary" href="admin/participants">Cancel</a>
                     </div>
                 </EditForm>
@@ -56,6 +57,7 @@
     public Guid? Id { get; set; }
 
     private ParticipantViewModel _model = new();
+    private bool _isBusy;
 
     private bool IsEdit => Id.HasValue;
 
@@ -77,15 +79,29 @@
 
     private async Task SaveAsync()
     {
-        if (IsEdit)
+        _isBusy = true;
+        try
         {
-            await ParticipantService.UpdateAsync(_model);
-        }
-        else
-        {
-            await ParticipantService.CreateAsync(_model);
-        }
+            if (IsEdit)
+            {
+                await ParticipantService.UpdateAsync(_model);
+                ToastService.ShowSuccess("Participant updated.");
+            }
+            else
+            {
+                await ParticipantService.CreateAsync(_model);
+                ToastService.ShowSuccess("Participant created.");
+            }
 
-        Navigation.NavigateTo("admin/participants");
+            Navigation.NavigateTo("admin/participants");
+        }
+        catch (EventManagementException ex)
+        {
+            ToastService.ShowError(ex.Message);
+        }
+        finally
+        {
+            _isBusy = false;
+        }
     }
 }

@@ -2,6 +2,7 @@
 @attribute [Authorize(Roles = "Admin")]
 @inject IEventService EventService
 @inject IJSRuntime JS
+@inject IToastService ToastService
 
 <PageTitle>Manage Events</PageTitle>
 
@@ -13,7 +14,7 @@
 
 @if (_events is null)
 {
-    <LoadingSpinner />
+    <SkeletonTable />
 }
 else if (_events.Count == 0)
 {
@@ -83,6 +84,7 @@ else
         }
 
         await EventService.CancelEventAsync(guidId, sReason);
+        ToastService.ShowSuccess("The event was cancelled.");
         await LoadAsync();
     }
 
@@ -95,6 +97,7 @@ else
         }
 
         await EventService.DeleteEventAsync(guidId);
+        ToastService.ShowSuccess($"Event '{sName}' was deleted.");
         await LoadAsync();
     }
 }

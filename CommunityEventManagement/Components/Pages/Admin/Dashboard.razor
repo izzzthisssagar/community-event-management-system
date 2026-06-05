@@ -24,18 +24,83 @@
     </div>
 </div>
 
+<div class="row g-3 mt-1">
+    <div class="col-lg-8">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0 d-flex align-items-center gap-2"><Icon Name="calendar" Size="18" /> Upcoming events</h5>
+                    <a class="btn btn-sm btn-outline-primary" href="admin/events">View all</a>
+                </div>
+
+                @if (_upcoming is null)
+                {
+                    <SkeletonTable Rows="3" />
+                }
+                else if (_upcoming.Count == 0)
+                {
+                    <EmptyState IconName="calendar" Message="No upcoming events scheduled." />
+                }
+                else
+                {
+                    <div class="list-group list-group-flush">
+                        @foreach (Event upcomingEvent in _upcoming)
+                        {
+                            <a href="admin/events/edit/@upcomingEvent.Id"
+                               class="list-group-item list-group-item-action d-flex justify-content-between align-items-center px-0">
+                                <span>
+                                    <span class="fw-semibold d-block">@upcomingEvent.Name</span>
+                                    <span class="text-muted small">
+                                        @upcomingEvent.Date.ToString("ddd, dd MMM yyyy") &middot; @upcomingEvent.StartTime.ToString(@"hh\:mm")
+                                    </span>
+                                </span>
+                                <span class="text-muted small text-nowrap">
+                                    @upcomingEvent.Registrations.Count(r => !r.IsCancelled) / @upcomingEvent.MaxCapacity registered
+                                </span>
+                            </a>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="mb-3">Quick actions</h5>
+                <div class="d-grid gap-2">
+                    <a class="btn btn-primary" href="admin/events/create"><Icon Name="plus" Size="16" /> New event</a>
+                    <a class="btn btn-outline-secondary" href="admin/venues/create"><Icon Name="plus" Size="16" /> New venue</a>
+                    <a class="btn btn-outline-secondary" href="admin/activities/create"><Icon Name="plus" Size="16" /> New activity</a>
+                    <a class="btn btn-outline-secondary" href="admin/participants/create"><Icon Name="plus" Size="16" /> New participant</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 @code {
     private int _eventCount;
     private int _venueCount;
     private int _activityCount;
     private int _participantCount;
+    private List<Event>? _upcoming;
 
     protected override async Task OnInitializedAsync()
     {
-        // Load the four lists and just show how many of each there are.
-        _eventCount = (await EventService.GetEventsAsync()).Count;
+        // Load every event once (it already includes the registrations), then reuse that list both
+        // for the count and to work out the next few upcoming events — no extra database calls.
+        List<Event> allEvents = await EventService.GetEventsAsync();
+        _eventCount = allEvents.Count;
         _venueCount = (await VenueService.GetAllAsync()).Count;
         _activityCount = (await ActivityService.GetAllAsync()).Count;
         _participantCount = (await ParticipantService.GetAllAsync()).Count;
+
+        _upcoming = allEvents
+            .Where(e => e.Date.Date >= DateTime.Today && !e.IsCancelled)
+            .OrderBy(e => e.Date)
+            .Take(5)
+            .ToList();
     }
 }

@@ -2,6 +2,7 @@
 @attribute [Authorize(Roles = "Admin")]
 @inject IParticipantService ParticipantService
 @inject IJSRuntime JS
+@inject IToastService ToastService
 
 <PageTitle>Manage Participants</PageTitle>
 
@@ -13,7 +14,7 @@
 
 @if (_participants is null)
 {
-    <LoadingSpinner />
+    <SkeletonTable />
 }
 else if (_participants.Count == 0)
 {
@@ -74,6 +75,7 @@ else
         }
 
         await ParticipantService.DeleteAsync(guidId);
+        ToastService.ShowSuccess($"Participant '{sName}' was deleted.");
         await LoadAsync();
     }
 }

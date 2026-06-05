@@ -46,6 +46,10 @@ builder.Services.AddScoped<IVenueService, VenueService>();
 builder.Services.AddScoped<IActivityService, ActivityService>();
 builder.Services.AddScoped<IRegistrationService, RegistrationService>();
 
+// The toast service shows small pop-up notifications. It is Scoped so the pages and the Toaster
+// component share one instance per user connection.
+builder.Services.AddScoped<IToastService, ToastService>();
+
 // ----- Authentication -----
 // The user repository and the auth service handle logging people in and out.
 builder.Services.AddScoped<IUserRepository, UserRepository>();

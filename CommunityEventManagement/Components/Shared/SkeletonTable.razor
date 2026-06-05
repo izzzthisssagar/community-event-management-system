@@ -1,0 +1,19 @@
+@* A skeleton placeholder shaped like a table, shown while a list page is loading its rows. *@
+
+<div class="card">
+    <div class="p-3 d-flex flex-column gap-3">
+        @for (int iRow = 0; iRow < Rows; iRow++)
+        {
+            <div class="d-flex gap-3 align-items-center">
+                <Skeleton Width="32%" Height="0.95rem" />
+                <Skeleton Width="22%" Height="0.95rem" />
+                <Skeleton Width="18%" Height="0.95rem" />
+                <Skeleton Width="14%" Height="0.95rem" CssClass="ms-auto" />
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public int Rows { get; set; } = 4;
+}

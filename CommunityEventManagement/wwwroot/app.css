@@ -17,7 +17,7 @@
     --surface: #ffffff;          /* cards, panels */
     --text: #1e293b;             /* slate-800, body text */
     --heading: #0f172a;          /* slate-900, headings */
-    --muted: #64748b;            /* slate-500, secondary text */
+    --muted: #475569;            /* slate-600, secondary text (WCAG 4.5:1 friendly) */
     --border: #e8eaf3;           /* hairline borders */
     --ring: rgba(124, 58, 237, 0.32);
 
@@ -485,3 +485,119 @@ tbody tr {
 .home-tile-icon--primary { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
 .home-tile-icon--accent  { background: linear-gradient(135deg, #fb923c, #ea580c); }
 .home-tile-icon--info    { background: linear-gradient(135deg, #38bdf8, #0284c7); }
+
+/* =========================================================================
+   Professional UX layer: content shell, focus, skeletons, buttons, toasts
+   ========================================================================= */
+
+/* ----- Content shell: keeps every page aligned and readable on wide screens ----- */
+.page-container {
+    max-width: 1280px;
+    margin-inline: auto;
+    width: 100%;
+}
+
+/* ----- Clear keyboard focus on every interactive element ----- */
+a:focus-visible,
+.btn:focus-visible,
+.form-control:focus-visible,
+.form-select:focus-visible,
+.form-check-input:focus-visible,
+.nav-link:focus-visible,
+.stat-card:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--ring);
+    border-radius: var(--radius-sm);
+}
+
+/* ----- Spinner inside a LoadingButton ----- */
+.btn-spinner {
+    display: inline-block;
+    width: 15px;
+    height: 15px;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.65s linear infinite;
+}
+
+.btn-outline-primary .btn-spinner,
+.btn-outline-secondary .btn-spinner,
+.btn-outline-danger .btn-spinner {
+    border-color: rgba(124, 58, 237, 0.3);
+    border-top-color: var(--primary);
+}
+
+/* ----- Skeleton loaders ----- */
+.skeleton {
+    display: block;
+    border-radius: 6px;
+    background: linear-gradient(90deg, #eef1f6 25%, #e2e6ef 37%, #eef1f6 63%);
+    background-size: 400% 100%;
+    animation: skeleton-shimmer 1.4s ease infinite;
+}
+
+@keyframes skeleton-shimmer {
+    from { background-position: 100% 50%; }
+    to   { background-position: 0 50%; }
+}
+
+/* ----- Toast notifications ----- */
+.toast-stack {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 1080;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    width: min(360px, calc(100vw - 2rem));
+    pointer-events: none;
+}
+
+.toast-item {
+    pointer-events: auto;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.8rem 0.9rem;
+    border-radius: var(--radius-sm);
+    background: #ffffff;
+    box-shadow: var(--shadow-lg);
+    border-left: 4px solid var(--primary);
+    animation: toast-in 280ms var(--ease-out) both;
+}
+
+@keyframes toast-in {
+    from { opacity: 0; transform: translateX(16px) scale(0.98); }
+    to   { opacity: 1; transform: none; }
+}
+
+.toast-item__text {
+    flex: 1;
+    font-size: 0.9rem;
+    color: var(--heading);
+}
+
+.toast-item__close {
+    border: none;
+    background: none;
+    font-size: 1.25rem;
+    line-height: 1;
+    color: var(--muted);
+    cursor: pointer;
+    padding: 0 0.15rem;
+}
+
+.toast-item--success { border-left-color: #10b981; }
+.toast-item--success .cem-icon { color: #10b981; }
+.toast-item--error   { border-left-color: #ef4444; }
+.toast-item--error .cem-icon   { color: #ef4444; }
+.toast-item--info    { border-left-color: var(--primary); }
+.toast-item--info .cem-icon    { color: var(--primary); }
+
+@media (prefers-reduced-motion: reduce) {
+    .skeleton { animation: none; }
+    .toast-item { animation: none; }
+    .btn-spinner, .loading-spinner__ring { animation-duration: 1.2s; }
+}

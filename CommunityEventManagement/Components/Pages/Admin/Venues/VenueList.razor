@@ -2,6 +2,7 @@
 @attribute [Authorize(Roles = "Admin")]
 @inject IVenueService VenueService
 @inject IJSRuntime JS
+@inject IToastService ToastService
 
 <PageTitle>Manage Venues</PageTitle>
 
@@ -13,7 +14,7 @@
 
 @if (_venues is null)
 {
-    <LoadingSpinner />
+    <SkeletonTable />
 }
 else if (_venues.Count == 0)
 {
@@ -80,6 +81,7 @@ else
         }
 
         await VenueService.DeleteAsync(guidId);
+        ToastService.ShowSuccess($"Venue '{sName}' was deleted.");
         await LoadAsync();
     }
 }
