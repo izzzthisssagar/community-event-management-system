@@ -1,58 +1,63 @@
 @page "/login"
+@layout LoginLayout
 @attribute [AllowAnonymous]
 
-<PageTitle>Login — Community Events</PageTitle>
+<PageTitle>Sign in — Community Events</PageTitle>
 
-@* This page is rendered statically (see App.razor) so the form below does a normal HTTP POST to *@
-@* my AuthController at /auth/login. data-enhance="false" stops Blazor from intercepting the post. *@
+@* This page is rendered statically (see App.razor) so the form does a normal HTTP POST to my    *@
+@* AuthController at /auth/login. data-enhance="false" stops Blazor from intercepting the post.   *@
 
-<div class="row justify-content-center mt-5">
-    <div class="col-md-5 col-lg-4">
-        <div class="card shadow-sm">
-            <div class="card-body p-4">
-                <h3 class="card-title mb-3 text-center">Community Events</h3>
-                <p class="text-muted text-center mb-4">Please sign in to continue</p>
+<div class="login-card">
+    <div class="login-card__brand">
+        <span class="login-card__badge" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+        </span>
+        <h1 class="login-card__title">Community Events</h1>
+        <p class="login-card__subtitle">Sign in to manage and join events</p>
+    </div>
 
-                @if (Error)
-                {
-                    <div class="alert alert-danger" role="alert">
-                        The email or password you entered is incorrect.
-                    </div>
-                }
-
-                <form method="post" action="/auth/login" data-enhance="false">
-                    <AntiforgeryToken />
-
-                    <div class="mb-3">
-                        <label for="email" class="form-label">Email</label>
-                        <input id="email" name="Email" type="email" class="form-control" required autofocus />
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="password" class="form-label">Password</label>
-                        <input id="password" name="Password" type="password" class="form-control" required />
-                    </div>
-
-                    <div class="form-check mb-3">
-                        <input id="rememberMe" name="RememberMe" value="true" type="checkbox" class="form-check-input" />
-                        <label for="rememberMe" class="form-check-label">Remember me</label>
-                    </div>
-
-                    <button type="submit" class="btn btn-primary w-100">Sign in</button>
-                </form>
-
-                <hr class="my-4" />
-                <p class="text-muted small mb-0 text-center">
-                    Default admin account: <strong>admin@events.com</strong> / <strong>Admin123!</strong>
-                </p>
-            </div>
+    @if (Error)
+    {
+        <div class="alert alert-danger" role="alert">
+            The email or password you entered is incorrect.
         </div>
+    }
+
+    <form method="post" action="/auth/login" data-enhance="false">
+        <AntiforgeryToken />
+
+        <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <input id="email" name="Email" type="email" class="form-control" placeholder="you@example.com" required autofocus />
+        </div>
+
+        <div class="mb-3">
+            <label for="password" class="form-label">Password</label>
+            <input id="password" name="Password" type="password" class="form-control" placeholder="••••••••" required />
+        </div>
+
+        <div class="form-check mb-4">
+            <input id="rememberMe" name="RememberMe" value="true" type="checkbox" class="form-check-input" />
+            <label for="rememberMe" class="form-check-label">Remember me</label>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100">Sign in</button>
+    </form>
+
+    <div class="login-card__hint">
+        Default admin: <strong>admin@events.com</strong> &middot; <strong>Admin123!</strong>
     </div>
 </div>
 
 @code {
     // When the login fails, my AuthController redirects back to "/login?error=true". This picks up
-    // that query string value so the page can show the red error message above.
+    // that query string value so the page can show the error message above.
     [SupplyParameterFromQuery]
     private bool Error { get; set; }
 }
