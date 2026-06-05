@@ -1,34 +1,35 @@
 # Test Plan and Results
 
-All 13 automated tests pass. They are split across three approaches: repository tests run against
-a real in-memory SQLite database, service tests use Moq to isolate the business logic, and
-component tests use bUnit to render the Blazor UI.
+All **43 automated tests pass**. They use xUnit and are spread across several styles so each layer
+is tested in the most appropriate way, covering happy paths, edge cases and boundary conditions.
 
-| #  | Test | What it checks | Expected result | Status |
-|----|------|----------------|-----------------|--------|
-| 1  | `AddAsync_WithVenueAndActivity_SavesEventAndItsLinks` | Repository (SQLite) | Event is saved with its venue and activity links | Pass |
-| 2  | `GetByIdAsync_WhenIdDoesNotExist_ReturnsNull` | Repository (SQLite) | Returns null for an unknown id | Pass |
-| 3  | `GetByDateAsync_ReturnsOnlyEventsOnThatDate` | Repository (SQLite) | Only events on the chosen date are returned | Pass |
-| 4  | `SearchAsync_FilterByVenue_ReturnsOnlyEventsAtThatVenue` | Repository (SQLite) | Only events at the chosen venue are returned | Pass |
-| 5  | `Registration_WithDuplicateEventAndParticipant_ViolatesUniqueIndex` | Repository (SQLite) | The unique index rejects a duplicate registration | Pass |
-| 6  | `RegisterAsync_WhenEverythingIsValid_SavesTheRegistration` | Service (Moq) | A valid registration is created and saved once | Pass |
-| 7  | `RegisterAsync_WhenParticipantAlreadyRegistered_ThrowsDuplicateRegistrationException` | Service (Moq) | Duplicate registration throws the right exception | Pass |
-| 8  | `RegisterAsync_WhenEventIsFull_ThrowsVenueCapacityExceededException` | Service (Moq) | Registering past capacity throws the right exception | Pass |
-| 9  | `CancelEventAsync_MarksTheEventAsCancelledWithTheReason` | Service (Moq) | ICancelable.Cancel sets IsCancelled and the reason | Pass |
-| 10 | `GetEventsAsync_NoArguments_ReturnsEveryEvent` | Service (Moq) | The no-argument overload returns all events | Pass |
-| 11 | `EventList_WhenGivenTwoEvents_RendersTwoEventCards` | Component (bUnit) | The browse page renders one card per event | Pass |
-| 12 | `EventDetail_ShowsTheEventName` | Component (bUnit) | The details page shows the event's name | Pass |
-| 13 | `EventDetail_ClickingRegisterWithoutChoosingParticipant_ShowsAnError` | Component (bUnit) | A friendly error shows and no registration is attempted | Pass |
+| Test group | Style | Count | What it covers |
+|------------|-------|-------|----------------|
+| Entity rules | Plain xUnit | 8 | Duplicate registration, capacity reached exactly (boundary), re-registering after a cancellation (edge case), available-seat counting, cancellation, collection de-duplication |
+| Polymorphism | Plain xUnit | 4 | `GetActivityDetails()` dispatched through base-type references to each subclass |
+| Validators | FluentValidation TestHelper | 10 | Cross-property end-time rule, conditional per-subclass rules, boundary capacities, invalid email, empty password |
+| Repositories | SQLite in-memory | 7 | Save with links, unknown id, filter by date / venue / activity-type (TPH discriminator), unique-index violation, cascade delete |
+| Services | Moq | 11 | Register happy path, duplicate, capacity, cancelled event, event/participant not found, cancel event, cancel registration |
+| Components | bUnit | 3 | Browse list renders cards, detail shows name, register-without-participant shows error |
+
+## Why these testing methods
+
+- **SQLite in-memory** (not the EF "InMemory" provider) is a real relational database, so the
+  repository tests actually enforce the foreign keys and the unique index — the same rules MySQL
+  enforces in production. Writing these tests even caught a real cross-provider bug (ordering by a
+  `TimeSpan` column).
+- **Moq** isolates the service business logic from the database so the rules can be tested directly.
+- **bUnit** renders the Blazor components in memory to check the UI behaves correctly.
+- **FluentValidation TestHelper** checks the validation rules, including the cross-property and
+  conditional rules.
 
 ## How to run the tests
-
-From the solution folder:
 
 ```bash
 dotnet test
 ```
 
-Expected output: `Passed! - Failed: 0, Passed: 13`.
+Expected output: `Passed! - Failed: 0, Passed: 43`.
 
 > Add a screenshot of the Visual Studio Test Explorer (all green) here as evidence in the final
 > submission document.

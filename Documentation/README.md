@@ -7,9 +7,14 @@ This folder contains everything for the written part of the submission.
 | `CET254_Documentation.html` | The full submission document. **Open this in Microsoft Word** and use *File → Save As → Word Document (.docx)*. The diagrams embed automatically because the PNGs are in this same folder. |
 | `class-diagram.png` | Rendered UML class diagram (used by the document). |
 | `erd.png` | Rendered Entity Relationship Diagram (used by the document). |
-| `01-class-diagram.md` | The Mermaid source for the class diagram (in case you want to re-render or edit it at <https://mermaid.live>). |
+| `architecture.png` | Rendered layered-architecture diagram (Repository + Service patterns). |
+| `sequence-registration.png` | Rendered sequence diagram of the registration use case. |
+| `01-class-diagram.md` | The Mermaid source for the class diagram (re-render or edit at <https://mermaid.live>). |
 | `02-erd.md` | The Mermaid source for the ERD. |
-| `03-test-plan.md` | The test plan table in Markdown. |
+| `03-test-plan.md` | The test plan (43 tests) in Markdown. |
+| `04-architecture-diagram.md` | The Mermaid source for the architecture diagram. |
+| `05-sequence-diagram.md` | The Mermaid source for the sequence diagram. |
+| `DEMO-SCRIPT.md` | A timed 10-minute script for the Panopto demonstration, mapped to each marking area. |
 
 ## Steps to finish the Word document
 
