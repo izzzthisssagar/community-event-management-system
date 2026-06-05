@@ -1,0 +1,66 @@
+@implements IDisposable
+@inject IToastService ToastService
+
+@* Renders the stack of toast notifications in the corner of the screen. It listens to the
+   ToastService and shows each toast, then removes it automatically after a few seconds. *@
+
+<div class="toast-stack" aria-live="polite" aria-atomic="false">
+    @foreach (ToastMessage message in ToastService.Messages)
+    {
+        <div class="toast-item toast-item--@message.Level.ToString().ToLowerInvariant()" @key="message.Id" role="status">
+            <Icon Name="@IconFor(message.Level)" Size="18" />
+            <span class="toast-item__text">@message.Text</span>
+            <button class="toast-item__close" @onclick="() => ToastService.Remove(message.Id)" aria-label="Dismiss notification">&times;</button>
+        </div>
+    }
+</div>
+
+@code {
+    // Keeps track of which toasts have already had their auto-dismiss timer started.
+    private readonly HashSet<Guid> _scheduled = new();
+
+    protected override void OnInitialized()
+    {
+        ToastService.OnChange += HandleChange;
+    }
+
+    // Runs whenever a toast is added or removed. I start an auto-dismiss timer for any new toast and
+    // then re-render. InvokeAsync makes sure I am on Blazor's UI thread.
+    private void HandleChange()
+    {
+        InvokeAsync(() =>
+        {
+            foreach (ToastMessage message in ToastService.Messages)
+            {
+                if (_scheduled.Add(message.Id))
+                {
+                    _ = DismissAfterDelayAsync(message.Id);
+                }
+            }
+            StateHasChanged();
+        });
+    }
+
+    // Waits a few seconds, then removes the toast so it fades away on its own.
+    private async Task DismissAfterDelayAsync(Guid guidId)
+    {
+        await Task.Delay(4000);
+        await InvokeAsync(() =>
+        {
+            ToastService.Remove(guidId);
+            _scheduled.Remove(guidId);
+        });
+    }
+
+    private string IconFor(ToastLevel level) => level switch
+    {
+        ToastLevel.Success => "check-circle",
+        ToastLevel.Error => "ban",
+        _ => "ticket"
+    };
+
+    public void Dispose()
+    {
+        ToastService.OnChange -= HandleChange;
+    }
+}

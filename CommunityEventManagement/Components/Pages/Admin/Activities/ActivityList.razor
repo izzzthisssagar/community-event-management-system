@@ -2,6 +2,7 @@
 @attribute [Authorize(Roles = "Admin")]
 @inject IActivityService ActivityService
 @inject IJSRuntime JS
+@inject IToastService ToastService
 
 <PageTitle>Manage Activities</PageTitle>
 
@@ -13,7 +14,7 @@
 
 @if (_activities is null)
 {
-    <LoadingSpinner />
+    <SkeletonTable />
 }
 else if (_activities.Count == 0)
 {
@@ -89,6 +90,7 @@ else
         }
 
         await ActivityService.DeleteAsync(guidId);
+        ToastService.ShowSuccess($"Activity '{sTitle}' was deleted.");
         await LoadAsync();
     }
 }

@@ -1,0 +1,22 @@
+@* Skeleton placeholders shaped like the event cards, shown while the browse page is loading. *@
+
+<div class="row g-3">
+    @for (int iCard = 0; iCard < Count; iCard++)
+    {
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <Skeleton Width="65%" Height="1.3rem" CssClass="mb-3" />
+                    <Skeleton Width="50%" Height="0.85rem" CssClass="mb-3" />
+                    <Skeleton Width="100%" Height="0.8rem" CssClass="mb-1" />
+                    <Skeleton Width="85%" Height="0.8rem" CssClass="mb-4" />
+                    <Skeleton Width="38%" Height="2rem" />
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public int Count { get; set; } = 3;
+}

@@ -1,0 +1,35 @@
+@* A button that shows a small spinner and disables itself while a job is running. This stops the
+   user double-clicking (for example submitting a form twice) and makes the app feel responsive. *@
+
+<button type="@Type" class="@CssClass" disabled="@(Busy || Disabled)" @onclick="HandleClickAsync">
+    @if (Busy)
+    {
+        <span class="btn-spinner" aria-hidden="true"></span>
+    }
+    @ChildContent
+</button>
+
+@code {
+    // When true, the button shows a spinner and cannot be clicked.
+    [Parameter] public bool Busy { get; set; }
+
+    [Parameter] public bool Disabled { get; set; }
+
+    // "button" for normal clicks, or "submit" inside an EditForm.
+    [Parameter] public string Type { get; set; } = "button";
+
+    [Parameter] public string CssClass { get; set; } = "btn btn-primary";
+
+    [Parameter] public EventCallback OnClick { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private async Task HandleClickAsync()
+    {
+        // For a submit button the form handles the work, so there is usually no OnClick handler.
+        if (!Busy && OnClick.HasDelegate)
+        {
+            await OnClick.InvokeAsync();
+        }
+    }
+}

@@ -3,6 +3,7 @@
 @attribute [Authorize(Roles = "Admin")]
 @inject IVenueService VenueService
 @inject NavigationManager Navigation
+@inject IToastService ToastService
 
 <PageTitle>@(IsEdit ? "Edit Venue" : "Add Venue")</PageTitle>
 
@@ -41,7 +42,7 @@
                     </div>
 
                     <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary"><Icon Name="check-circle" Size="16" /> Save</button>
+                        <LoadingButton Type="submit" Busy="_isBusy" CssClass="btn btn-primary"><Icon Name="check-circle" Size="16" /> Save</LoadingButton>
                         <a class="btn btn-outline-secondary" href="admin/venues">Cancel</a>
                     </div>
                 </EditForm>
@@ -55,6 +56,7 @@
     public Guid? Id { get; set; }
 
     private VenueViewModel _model = new();
+    private bool _isBusy;
 
     // True when the page was opened with an Id in the URL, which means we are editing.
     private bool IsEdit => Id.HasValue;
@@ -78,16 +80,31 @@
 
     private async Task SaveAsync()
     {
-        if (IsEdit)
+        _isBusy = true;
+        try
         {
-            await VenueService.UpdateAsync(_model);
-        }
-        else
-        {
-            await VenueService.CreateAsync(_model);
-        }
+            if (IsEdit)
+            {
+                await VenueService.UpdateAsync(_model);
+                ToastService.ShowSuccess("Venue updated.");
+            }
+            else
+            {
+                await VenueService.CreateAsync(_model);
+                ToastService.ShowSuccess("Venue created.");
+            }
 
-        // Go back to the list once the save has worked.
-        Navigation.NavigateTo("admin/venues");
+            // Go back to the list once the save has worked.
+            Navigation.NavigateTo("admin/venues");
+        }
+        catch (EventManagementException ex)
+        {
+            // Show a friendly error toast and stay on the form so the user can fix it.
+            ToastService.ShowError(ex.Message);
+        }
+        finally
+        {
+            _isBusy = false;
+        }
     }
 }
