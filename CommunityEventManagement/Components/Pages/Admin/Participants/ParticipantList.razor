@@ -1,0 +1,70 @@
+@page "/admin/participants"
+@attribute [Authorize(Roles = "Admin")]
+@inject IParticipantService ParticipantService
+@inject IJSRuntime JS
+
+<PageTitle>Manage Participants</PageTitle>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="mb-0">Participants</h1>
+    <a class="btn btn-primary" href="admin/participants/create">Add participant</a>
+</div>
+
+@if (_participants is null)
+{
+    <p>Loading...</p>
+}
+else if (_participants.Count == 0)
+{
+    <div class="alert alert-info">No participants yet.</div>
+}
+else
+{
+    <table class="table table-striped align-middle">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (Participant participant in _participants)
+            {
+                <tr>
+                    <td>@participant.FullName</td>
+                    <td>@participant.Email</td>
+                    <td>@participant.PhoneNumber</td>
+                    <td class="text-end">
+                        <a class="btn btn-sm btn-outline-secondary" href="admin/participants/edit/@participant.Id">Edit</a>
+                        <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteAsync(participant.Id, participant.FullName)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Participant>? _participants;
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _participants = await ParticipantService.GetAllAsync();
+    }
+
+    private async Task DeleteAsync(Guid guidId, string sName)
+    {
+        bool bConfirmed = await JS.InvokeAsync<bool>("confirm", $"Delete participant '{sName}'?");
+        if (!bConfirmed)
+        {
+            return;
+        }
+
+        await ParticipantService.DeleteAsync(guidId);
+        await LoadAsync();
+    }
+}

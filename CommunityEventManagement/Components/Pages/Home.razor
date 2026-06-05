@@ -1,7 +1,42 @@
-﻿@page "/"
+@page "/"
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Home — Community Events</PageTitle>
 
-<h1>Hello, world!</h1>
+<div class="container py-4">
+    <h1 class="mb-3">Community Event Management System</h1>
 
-Welcome to your new app.
+    <AuthorizeView>
+        <Authorized>
+            <p class="lead">Welcome back, @context.User.Identity?.Name.</p>
+            <p>Use the menu on the left to browse events or manage the system.</p>
+
+            <div class="row g-3 mt-2">
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">Browse events</h5>
+                            <p class="card-text">See what is coming up and register people for events.</p>
+                            <a class="btn btn-primary" href="events">Browse events</a>
+                        </div>
+                    </div>
+                </div>
+                <AuthorizeView Roles="Admin" Context="adminContext">
+                    <div class="col-md-4">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">Admin dashboard</h5>
+                                <p class="card-text">Create and manage events, venues, activities and participants.</p>
+                                <a class="btn btn-primary" href="admin">Open dashboard</a>
+                            </div>
+                        </div>
+                    </div>
+                </AuthorizeView>
+            </div>
+        </Authorized>
+        <NotAuthorized>
+            <p class="lead">A simple system for organising community events, venues, activities and registrations.</p>
+            <p>Please sign in to get started.</p>
+            <a class="btn btn-primary" href="login">Log in</a>
+        </NotAuthorized>
+    </AuthorizeView>
+</div>

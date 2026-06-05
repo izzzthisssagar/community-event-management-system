@@ -1,0 +1,85 @@
+@page "/admin/activities"
+@attribute [Authorize(Roles = "Admin")]
+@inject IActivityService ActivityService
+@inject IJSRuntime JS
+
+<PageTitle>Manage Activities</PageTitle>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="mb-0">Activities</h1>
+    <a class="btn btn-primary" href="admin/activities/create">Add activity</a>
+</div>
+
+@if (_activities is null)
+{
+    <p>Loading...</p>
+}
+else if (_activities.Count == 0)
+{
+    <div class="alert alert-info">No activities yet.</div>
+}
+else
+{
+    <table class="table table-striped align-middle">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Type</th>
+                <th>Duration (min)</th>
+                <th>Details</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (Activity activity in _activities)
+            {
+                <tr>
+                    <td>@activity.Title</td>
+                    <td><span class="badge bg-secondary">@GetActivityType(activity)</span></td>
+                    <td>@activity.DurationMinutes</td>
+                    @* GetActivityDetails() is polymorphic — the correct subclass version runs. *@
+                    <td class="small">@activity.GetActivityDetails()</td>
+                    <td class="text-end">
+                        <a class="btn btn-sm btn-outline-secondary" href="admin/activities/edit/@activity.Id">Edit</a>
+                        <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteAsync(activity.Id, activity.Title)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Activity>? _activities;
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _activities = await ActivityService.GetAllAsync();
+    }
+
+    // Works out the friendly type name from the real subclass of the activity.
+    private string GetActivityType(Activity activity)
+    {
+        return activity switch
+        {
+            WorkshopActivity => "Workshop",
+            GameActivity => "Game",
+            TalkActivity => "Talk",
+            _ => "Activity"
+        };
+    }
+
+    private async Task DeleteAsync(Guid guidId, string sTitle)
+    {
+        bool bConfirmed = await JS.InvokeAsync<bool>("confirm", $"Delete activity '{sTitle}'?");
+        if (!bConfirmed)
+        {
+            return;
+        }
+
+        await ActivityService.DeleteAsync(guidId);
+        await LoadAsync();
+    }
+}

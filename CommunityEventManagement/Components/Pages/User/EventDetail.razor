@@ -1,0 +1,155 @@
+@page "/events/{EventId:guid}"
+@attribute [Authorize]
+@inject IEventService EventService
+@inject IParticipantService ParticipantService
+@inject IRegistrationService RegistrationService
+
+<PageTitle>Event Details</PageTitle>
+
+@if (_event is null)
+{
+    <p>Loading event...</p>
+}
+else
+{
+    <div class="d-flex align-items-center mb-3">
+        <h1 class="me-2 mb-0">@_event.Name</h1>
+        @if (_event.IsCancelled)
+        {
+            <span class="badge bg-danger">Cancelled</span>
+        }
+    </div>
+
+    <a class="btn btn-link ps-0 mb-3" href="events">&larr; Back to events</a>
+
+    <div class="row">
+        <div class="col-md-7">
+            <p class="text-muted">
+                @_event.Date.ToString("dddd, dd MMMM yyyy")
+                &middot; @_event.StartTime.ToString(@"hh\:mm")–@_event.EndTime.ToString(@"hh\:mm")
+            </p>
+            <p>@_event.Description</p>
+
+            <h5 class="mt-4">Venues</h5>
+            @if (_event.Venues.Count == 0)
+            {
+                <p class="text-muted">No venues assigned.</p>
+            }
+            else
+            {
+                <ul>
+                    @foreach (Venue venue in _event.Venues)
+                    {
+                        <li>@venue.Name — @venue.Address (capacity @venue.Capacity@(venue.IsAccessible ? ", accessible" : ""))</li>
+                    }
+                </ul>
+            }
+
+            <h5 class="mt-4">Activities</h5>
+            @if (_event.Activities.Count == 0)
+            {
+                <p class="text-muted">No activities assigned.</p>
+            }
+            else
+            {
+                <ul>
+                    @foreach (Activity activity in _event.Activities)
+                    {
+                        @* GetActivityDetails() is polymorphic — each subclass returns its own text. *@
+                        <li>@activity.GetActivityDetails()</li>
+                    }
+                </ul>
+            }
+        </div>
+
+        <div class="col-md-5">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Register a participant</h5>
+                    <p class="mb-1"><strong>Capacity:</strong> @_event.MaxCapacity</p>
+                    <p><strong>Seats left:</strong> @_event.GetAvailableSeats()</p>
+
+                    @if (_successMessage is not null)
+                    {
+                        <div class="alert alert-success">@_successMessage</div>
+                    }
+                    @if (_errorMessage is not null)
+                    {
+                        <div class="alert alert-danger">@_errorMessage</div>
+                    }
+
+                    @if (_event.IsCancelled)
+                    {
+                        <div class="alert alert-warning mb-0">This event has been cancelled, so registration is closed.</div>
+                    }
+                    else
+                    {
+                        <div class="mb-2">
+                            <label class="form-label">Choose participant</label>
+                            <select class="form-select" @bind="_selectedParticipantId">
+                                <option value="@Guid.Empty">-- select --</option>
+                                @foreach (Participant participant in _participants)
+                                {
+                                    <option value="@participant.Id">@participant.FullName (@participant.Email)</option>
+                                }
+                            </select>
+                        </div>
+                        <button class="btn btn-primary w-100" @onclick="RegisterParticipant">Register</button>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public Guid EventId { get; set; }
+
+    private Event? _event;
+    private List<Participant> _participants = new();
+    private Guid _selectedParticipantId = Guid.Empty;
+    private string? _successMessage;
+    private string? _errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _participants = await ParticipantService.GetAllAsync();
+        await LoadEventAsync();
+    }
+
+    private async Task LoadEventAsync()
+    {
+        _event = await EventService.GetEventByIdAsync(EventId);
+    }
+
+    private async Task RegisterParticipant()
+    {
+        // Clear any old messages first.
+        _successMessage = null;
+        _errorMessage = null;
+
+        if (_selectedParticipantId == Guid.Empty)
+        {
+            _errorMessage = "Please choose a participant first.";
+            return;
+        }
+
+        try
+        {
+            await RegistrationService.RegisterAsync(EventId, _selectedParticipantId);
+            _successMessage = "The participant was registered successfully.";
+            _selectedParticipantId = Guid.Empty;
+
+            // Reload so the "seats left" number updates.
+            await LoadEventAsync();
+        }
+        catch (EventManagementException ex)
+        {
+            // All of my custom exceptions (duplicate registration, event full, etc.) inherit from
+            // EventManagementException and already carry a clear message, so I show it gracefully
+            // here instead of letting it crash the page.
+            _errorMessage = ex.Message;
+        }
+    }
+}

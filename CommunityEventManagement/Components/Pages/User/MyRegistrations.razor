@@ -1,0 +1,112 @@
+@page "/my-registrations"
+@attribute [Authorize]
+@inject IParticipantService ParticipantService
+@inject IRegistrationService RegistrationService
+
+<PageTitle>Registrations</PageTitle>
+
+<h1 class="mb-4">Registrations</h1>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <label class="form-label">Show registrations for participant</label>
+        <select class="form-select" @bind="SelectedParticipantId" @bind:after="LoadRegistrationsAsync">
+            <option value="@Guid.Empty">-- select a participant --</option>
+            @foreach (Participant participant in _participants)
+            {
+                <option value="@participant.Id">@participant.FullName (@participant.Email)</option>
+            }
+        </select>
+    </div>
+</div>
+
+@if (_selectedParticipantId == Guid.Empty)
+{
+    <div class="alert alert-info">Choose a participant above to see what they are registered for.</div>
+}
+else if (_registrations is null)
+{
+    <p>Loading...</p>
+}
+else if (_registrations.Count == 0)
+{
+    <div class="alert alert-info">This participant has no registrations yet.</div>
+}
+else
+{
+    <table class="table table-striped align-middle">
+        <thead>
+            <tr>
+                <th>Event</th>
+                <th>Date</th>
+                <th>Registered on</th>
+                <th>Status</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (Registration registration in _registrations)
+            {
+                <tr>
+                    <td>@registration.Event.Name</td>
+                    <td>@registration.Event.Date.ToString("dd MMM yyyy")</td>
+                    <td>@registration.RegistrationDate.ToString("dd MMM yyyy")</td>
+                    <td>
+                        @if (registration.IsCancelled)
+                        {
+                            <span class="badge bg-secondary">Cancelled</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-success">@registration.Status</span>
+                        }
+                    </td>
+                    <td class="text-end">
+                        @if (!registration.IsCancelled)
+                        {
+                            <button class="btn btn-sm btn-outline-danger" @onclick="() => CancelRegistrationAsync(registration.Id)">
+                                Cancel
+                            </button>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Participant> _participants = new();
+    private List<Registration>? _registrations;
+    private Guid _selectedParticipantId = Guid.Empty;
+
+    // A small property wrapper so the dropdown can bind to the selected id.
+    private Guid SelectedParticipantId
+    {
+        get => _selectedParticipantId;
+        set => _selectedParticipantId = value;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _participants = await ParticipantService.GetAllAsync();
+    }
+
+    private async Task LoadRegistrationsAsync()
+    {
+        if (_selectedParticipantId == Guid.Empty)
+        {
+            _registrations = null;
+            return;
+        }
+
+        _registrations = await RegistrationService.GetByParticipantAsync(_selectedParticipantId);
+    }
+
+    private async Task CancelRegistrationAsync(Guid guidRegistrationId)
+    {
+        // Cancel through the service (which uses the registration's own Cancel method), then reload.
+        await RegistrationService.CancelRegistrationAsync(guidRegistrationId, "Cancelled by the user.");
+        await LoadRegistrationsAsync();
+    }
+}

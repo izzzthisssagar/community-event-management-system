@@ -1,0 +1,156 @@
+@page "/events"
+@attribute [Authorize]
+@inject IEventService EventService
+@inject IVenueService VenueService
+@implements IDisposable
+
+<PageTitle>Browse Events</PageTitle>
+
+<h1 class="mb-4">Browse Events</h1>
+
+@* ----- Search and filter controls ----- *@
+<div class="row g-2 mb-4">
+    <div class="col-md-4">
+        <input class="form-control" placeholder="Search by name or description..." @oninput="OnSearchInput" />
+    </div>
+    <div class="col-md-3">
+        <input type="date" class="form-control" @onchange="OnDateChanged" />
+    </div>
+    <div class="col-md-3">
+        <select class="form-select" @onchange="OnVenueChanged">
+            <option value="">All venues</option>
+            @foreach (Venue venue in _venues)
+            {
+                <option value="@venue.Id">@venue.Name</option>
+            }
+        </select>
+    </div>
+    <div class="col-md-2">
+        <select class="form-select" @onchange="OnActivityTypeChanged">
+            <option value="">All types</option>
+            <option value="Workshop">Workshop</option>
+            <option value="Game">Game</option>
+            <option value="Talk">Talk</option>
+        </select>
+    </div>
+</div>
+
+@* ----- Results ----- *@
+@if (_events is null)
+{
+    <p>Loading events...</p>
+}
+else if (_events.Count == 0)
+{
+    <div class="alert alert-info">No events match your search.</div>
+}
+else
+{
+    <div class="row g-3">
+        @foreach (Event currentEvent in _events)
+        {
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 event-card">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            @currentEvent.Name
+                            @if (currentEvent.IsCancelled)
+                            {
+                                <span class="badge bg-danger ms-1">Cancelled</span>
+                            }
+                        </h5>
+                        <p class="text-muted mb-1">
+                            @currentEvent.Date.ToString("ddd, dd MMM yyyy")
+                            &middot; @currentEvent.StartTime.ToString(@"hh\:mm")–@currentEvent.EndTime.ToString(@"hh\:mm")
+                        </p>
+                        <p class="card-text">@currentEvent.Description</p>
+                        @if (currentEvent.Venues.Count > 0)
+                        {
+                            <p class="small mb-1"><strong>Venues:</strong> @string.Join(", ", currentEvent.Venues.Select(v => v.Name))</p>
+                        }
+                        @if (currentEvent.Activities.Count > 0)
+                        {
+                            <p class="small mb-2"><strong>Activities:</strong> @string.Join(", ", currentEvent.Activities.Select(a => a.Title))</p>
+                        }
+                        <a class="btn btn-outline-primary btn-sm" href="events/@currentEvent.Id">View details</a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private List<Event>? _events;
+    private List<Venue> _venues = new();
+
+    // The current values of each filter. They start as null/empty meaning "no filter".
+    private string? _searchTerm;
+    private DateTime? _filterDate;
+    private Guid? _filterVenueId;
+    private string? _filterActivityType;
+
+    // The debounce timer. It waits 400ms after the user stops typing before it actually runs the
+    // search. Without this, a new database query would fire on every single key press, which is
+    // wasteful. AutoReset is false so it only fires once each time.
+    private readonly System.Timers.Timer _debounceTimer = new(400) { AutoReset = false };
+
+    protected override async Task OnInitializedAsync()
+    {
+        _venues = await VenueService.GetAllAsync();
+        _events = await EventService.GetUpcomingEventsAsync();
+        _debounceTimer.Elapsed += OnDebounceElapsed;
+    }
+
+    private void OnSearchInput(ChangeEventArgs e)
+    {
+        _searchTerm = e.Value?.ToString();
+        RestartDebounce();
+    }
+
+    private void OnDateChanged(ChangeEventArgs e)
+    {
+        _filterDate = DateTime.TryParse(e.Value?.ToString(), out DateTime dtParsed) ? dtParsed : null;
+        RestartDebounce();
+    }
+
+    private void OnVenueChanged(ChangeEventArgs e)
+    {
+        _filterVenueId = Guid.TryParse(e.Value?.ToString(), out Guid guidParsed) ? guidParsed : null;
+        RestartDebounce();
+    }
+
+    private void OnActivityTypeChanged(ChangeEventArgs e)
+    {
+        string? sValue = e.Value?.ToString();
+        _filterActivityType = string.IsNullOrEmpty(sValue) ? null : sValue;
+        RestartDebounce();
+    }
+
+    // Every change stops and restarts the timer, so the 400ms wait begins again from each keystroke.
+    private void RestartDebounce()
+    {
+        _debounceTimer.Stop();
+        _debounceTimer.Start();
+    }
+
+    // Runs once the user has paused for 400ms. The timer fires on a background thread, so I use
+    // InvokeAsync to get back onto Blazor's UI thread before I touch the component state.
+    private async void OnDebounceElapsed(object? sender, System.Timers.ElapsedEventArgs e)
+    {
+        await InvokeAsync(async () =>
+        {
+            // This calls the third (multi-filter) overload of GetEventsAsync, which builds the
+            // IQueryable dynamically and runs one efficient SQL query against the database.
+            _events = await EventService.GetEventsAsync(_searchTerm, _filterDate, _filterVenueId, _filterActivityType);
+            StateHasChanged();
+        });
+    }
+
+    // Tidy up the timer when the page is destroyed so it cannot leak or fire after I am gone.
+    public void Dispose()
+    {
+        _debounceTimer.Elapsed -= OnDebounceElapsed;
+        _debounceTimer.Dispose();
+    }
+}

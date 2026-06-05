@@ -1,0 +1,65 @@
+@page "/admin"
+@attribute [Authorize(Roles = "Admin")]
+@inject IEventService EventService
+@inject IVenueService VenueService
+@inject IActivityService ActivityService
+@inject IParticipantService ParticipantService
+
+<PageTitle>Admin Dashboard</PageTitle>
+
+<h1 class="mb-4">Admin Dashboard</h1>
+
+<div class="row g-3">
+    <div class="col-md-3">
+        <div class="card text-bg-primary">
+            <div class="card-body">
+                <h5 class="card-title">Events</h5>
+                <p class="display-6 mb-2">@_eventCount</p>
+                <a class="btn btn-light btn-sm" href="admin/events">Manage</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-bg-success">
+            <div class="card-body">
+                <h5 class="card-title">Venues</h5>
+                <p class="display-6 mb-2">@_venueCount</p>
+                <a class="btn btn-light btn-sm" href="admin/venues">Manage</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-bg-info">
+            <div class="card-body">
+                <h5 class="card-title">Activities</h5>
+                <p class="display-6 mb-2">@_activityCount</p>
+                <a class="btn btn-light btn-sm" href="admin/activities">Manage</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-bg-warning">
+            <div class="card-body">
+                <h5 class="card-title">Participants</h5>
+                <p class="display-6 mb-2">@_participantCount</p>
+                <a class="btn btn-light btn-sm" href="admin/participants">Manage</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private int _eventCount;
+    private int _venueCount;
+    private int _activityCount;
+    private int _participantCount;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Load the four lists and just show how many of each there are.
+        _eventCount = (await EventService.GetEventsAsync()).Count;
+        _venueCount = (await VenueService.GetAllAsync()).Count;
+        _activityCount = (await ActivityService.GetAllAsync()).Count;
+        _participantCount = (await ParticipantService.GetAllAsync()).Count;
+    }
+}
