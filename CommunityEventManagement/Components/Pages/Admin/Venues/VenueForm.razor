@@ -6,41 +6,47 @@
 
 <PageTitle>@(IsEdit ? "Edit Venue" : "Add Venue")</PageTitle>
 
-<h1 class="mb-4">@(IsEdit ? "Edit venue" : "Add venue")</h1>
+<PageHeader Title="@(IsEdit ? "Edit venue" : "Add venue")" Subtitle="A place where events can be held." />
 
 <div class="row">
-    <div class="col-md-6">
-        <EditForm Model="_model" OnValidSubmit="SaveAsync">
-            @* FluentValidationValidator wires my FluentValidation rules into this form. *@
-            <FluentValidationValidator />
-            <ValidationSummary class="text-danger" />
+    <div class="col-lg-7 col-xl-6">
+        <div class="card">
+            <div class="card-body p-4">
+                <EditForm Model="_model" OnValidSubmit="SaveAsync">
+                    @* FluentValidationValidator wires my FluentValidation rules into this form. *@
+                    <FluentValidationValidator />
+                    <ValidationSummary class="text-danger" />
 
-            <div class="mb-3">
-                <label class="form-label">Name</label>
-                <InputText class="form-control" @bind-Value="_model.Name" />
-                <ValidationMessage For="() => _model.Name" class="text-danger" />
+                    <div class="mb-3">
+                        <label class="form-label">Name</label>
+                        <InputText class="form-control" @bind-Value="_model.Name" />
+                        <ValidationMessage For="() => _model.Name" class="text-danger" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Address</label>
+                        <InputText class="form-control" @bind-Value="_model.Address" />
+                        <ValidationMessage For="() => _model.Address" class="text-danger" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Capacity</label>
+                        <InputNumber class="form-control" @bind-Value="_model.Capacity" />
+                        <ValidationMessage For="() => _model.Capacity" class="text-danger" />
+                    </div>
+
+                    <div class="form-check mb-4">
+                        <InputCheckbox class="form-check-input" id="accessible" @bind-Value="_model.IsAccessible" />
+                        <label class="form-check-label" for="accessible">Has disabled access</label>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary"><Icon Name="check-circle" Size="16" /> Save</button>
+                        <a class="btn btn-outline-secondary" href="admin/venues">Cancel</a>
+                    </div>
+                </EditForm>
             </div>
-
-            <div class="mb-3">
-                <label class="form-label">Address</label>
-                <InputText class="form-control" @bind-Value="_model.Address" />
-                <ValidationMessage For="() => _model.Address" class="text-danger" />
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Capacity</label>
-                <InputNumber class="form-control" @bind-Value="_model.Capacity" />
-                <ValidationMessage For="() => _model.Capacity" class="text-danger" />
-            </div>
-
-            <div class="form-check mb-3">
-                <InputCheckbox class="form-check-input" id="accessible" @bind-Value="_model.IsAccessible" />
-                <label class="form-check-label" for="accessible">Has disabled access</label>
-            </div>
-
-            <button type="submit" class="btn btn-primary">Save</button>
-            <a class="btn btn-secondary" href="admin/venues">Cancel</a>
-        </EditForm>
+        </div>
     </div>
 </div>
 

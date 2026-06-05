@@ -3,20 +3,19 @@
 <PageTitle>Home — Community Events</PageTitle>
 
 <div class="container py-4">
-    <h1 class="mb-3">Community Event Management System</h1>
-
     <AuthorizeView>
         <Authorized>
-            <p class="lead">Welcome back, @context.User.Identity?.Name.</p>
-            <p>Use the menu on the left to browse events or manage the system.</p>
+            <PageHeader Title="@($"Welcome back, {context.User.Identity?.Name}")"
+                        Subtitle="Use the menu on the left to browse events or manage the system." />
 
-            <div class="row g-3 mt-2">
+            <div class="row g-3 mt-1">
                 <div class="col-md-4">
                     <div class="card h-100">
                         <div class="card-body">
+                            <span class="home-tile-icon home-tile-icon--primary"><Icon Name="list" Size="22" /></span>
                             <h5 class="card-title">Browse events</h5>
-                            <p class="card-text">See what is coming up and register people for events.</p>
-                            <a class="btn btn-primary" href="events">Browse events</a>
+                            <p class="card-text text-muted">See what is coming up and register people for events.</p>
+                            <a class="btn btn-primary btn-sm" href="events">Browse events</a>
                         </div>
                     </div>
                 </div>
@@ -24,19 +23,32 @@
                     <div class="col-md-4">
                         <div class="card h-100">
                             <div class="card-body">
+                                <span class="home-tile-icon home-tile-icon--accent"><Icon Name="dashboard" Size="22" /></span>
                                 <h5 class="card-title">Admin dashboard</h5>
-                                <p class="card-text">Create and manage events, venues, activities and participants.</p>
-                                <a class="btn btn-primary" href="admin">Open dashboard</a>
+                                <p class="card-text text-muted">Create and manage events, venues, activities and participants.</p>
+                                <a class="btn btn-primary btn-sm" href="admin">Open dashboard</a>
                             </div>
                         </div>
                     </div>
                 </AuthorizeView>
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <span class="home-tile-icon home-tile-icon--info"><Icon Name="ticket" Size="22" /></span>
+                            <h5 class="card-title">Registrations</h5>
+                            <p class="card-text text-muted">View and cancel registrations for any participant.</p>
+                            <a class="btn btn-primary btn-sm" href="my-registrations">View registrations</a>
+                        </div>
+                    </div>
+                </div>
             </div>
         </Authorized>
         <NotAuthorized>
-            <p class="lead">A simple system for organising community events, venues, activities and registrations.</p>
-            <p>Please sign in to get started.</p>
-            <a class="btn btn-primary" href="login">Log in</a>
+            <div class="text-center py-5">
+                <h1 class="mb-3">Community Event Management System</h1>
+                <p class="lead text-muted">A simple system for organising community events, venues, activities and registrations.</p>
+                <a class="btn btn-primary mt-2" href="login">Log in to get started</a>
+            </div>
         </NotAuthorized>
     </AuthorizeView>
 </div>

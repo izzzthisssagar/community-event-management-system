@@ -1,0 +1,19 @@
+@* A single statistic tile used on the admin dashboard: an icon, a big number and a label, that
+   links through to the matching management page. Using one component keeps all four tiles identical
+   apart from their colour, icon, number and link. *@
+
+<a class="stat-card stat-card--@Variant" href="@Href">
+    <span class="stat-card__icon">
+        <Icon Name="@IconName" Size="22" />
+    </span>
+    <span class="stat-card__count">@Count</span>
+    <span class="stat-card__title">@Title</span>
+</a>
+
+@code {
+    [Parameter] public string Title { get; set; } = string.Empty;
+    [Parameter] public int Count { get; set; }
+    [Parameter] public string IconName { get; set; } = "list";
+    [Parameter] public string Href { get; set; } = "#";
+    [Parameter] public string Variant { get; set; } = "primary";
+}

@@ -5,7 +5,7 @@
 
 <PageTitle>Registrations</PageTitle>
 
-<h1 class="mb-4">Registrations</h1>
+<PageHeader Title="Registrations" Subtitle="See and cancel what a participant is registered for." />
 
 <div class="row mb-4">
     <div class="col-md-6">
@@ -22,57 +22,52 @@
 
 @if (_selectedParticipantId == Guid.Empty)
 {
-    <div class="alert alert-info">Choose a participant above to see what they are registered for.</div>
+    <EmptyState IconName="ticket" Message="Choose a participant above to see what they are registered for." />
 }
 else if (_registrations is null)
 {
-    <p>Loading...</p>
+    <LoadingSpinner />
 }
 else if (_registrations.Count == 0)
 {
-    <div class="alert alert-info">This participant has no registrations yet.</div>
+    <EmptyState IconName="ticket" Message="This participant has no registrations yet." />
 }
 else
 {
-    <table class="table table-striped align-middle">
-        <thead>
-            <tr>
-                <th>Event</th>
-                <th>Date</th>
-                <th>Registered on</th>
-                <th>Status</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (Registration registration in _registrations)
-            {
-                <tr>
-                    <td>@registration.Event.Name</td>
-                    <td>@registration.Event.Date.ToString("dd MMM yyyy")</td>
-                    <td>@registration.RegistrationDate.ToString("dd MMM yyyy")</td>
-                    <td>
-                        @if (registration.IsCancelled)
-                        {
-                            <span class="badge bg-secondary">Cancelled</span>
-                        }
-                        else
-                        {
-                            <span class="badge bg-success">@registration.Status</span>
-                        }
-                    </td>
-                    <td class="text-end">
-                        @if (!registration.IsCancelled)
-                        {
-                            <button class="btn btn-sm btn-outline-danger" @onclick="() => CancelRegistrationAsync(registration.Id)">
-                                Cancel
-                            </button>
-                        }
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-striped align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Event</th>
+                        <th>Date</th>
+                        <th>Registered on</th>
+                        <th>Status</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (Registration registration in _registrations)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@registration.Event.Name</td>
+                            <td class="text-nowrap">@registration.Event.Date.ToString("dd MMM yyyy")</td>
+                            <td class="text-nowrap">@registration.RegistrationDate.ToString("dd MMM yyyy")</td>
+                            <td><StatusBadge Status="@(registration.IsCancelled ? "Cancelled" : registration.Status)" /></td>
+                            <td class="text-end">
+                                @if (!registration.IsCancelled)
+                                {
+                                    <button class="btn btn-sm btn-outline-danger" @onclick="() => CancelRegistrationAsync(registration.Id)">
+                                        <Icon Name="ban" Size="14" /> Cancel
+                                    </button>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
 }
 
 @code {

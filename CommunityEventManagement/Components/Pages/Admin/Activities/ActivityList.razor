@@ -5,48 +5,57 @@
 
 <PageTitle>Manage Activities</PageTitle>
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="mb-0">Activities</h1>
-    <a class="btn btn-primary" href="admin/activities/create">Add activity</a>
-</div>
+<PageHeader Title="Activities" Subtitle="Workshops, games and talks that make up an event.">
+    <Actions>
+        <a class="btn btn-primary" href="admin/activities/create"><Icon Name="plus" Size="16" /> Add activity</a>
+    </Actions>
+</PageHeader>
 
 @if (_activities is null)
 {
-    <p>Loading...</p>
+    <LoadingSpinner />
 }
 else if (_activities.Count == 0)
 {
-    <div class="alert alert-info">No activities yet.</div>
+    <EmptyState IconName="activity" Message="No activities yet.">
+        <Action>
+            <a class="btn btn-primary" href="admin/activities/create"><Icon Name="plus" Size="16" /> Add activity</a>
+        </Action>
+    </EmptyState>
 }
 else
 {
-    <table class="table table-striped align-middle">
-        <thead>
-            <tr>
-                <th>Title</th>
-                <th>Type</th>
-                <th>Duration (min)</th>
-                <th>Details</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (Activity activity in _activities)
-            {
-                <tr>
-                    <td>@activity.Title</td>
-                    <td><span class="badge bg-secondary">@GetActivityType(activity)</span></td>
-                    <td>@activity.DurationMinutes</td>
-                    @* GetActivityDetails() is polymorphic — the correct subclass version runs. *@
-                    <td class="small">@activity.GetActivityDetails()</td>
-                    <td class="text-end">
-                        <a class="btn btn-sm btn-outline-secondary" href="admin/activities/edit/@activity.Id">Edit</a>
-                        <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteAsync(activity.Id, activity.Title)">Delete</button>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-striped align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Type</th>
+                        <th>Duration</th>
+                        <th>Details</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (Activity activity in _activities)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@activity.Title</td>
+                            <td><span class="badge bg-secondary">@GetActivityType(activity)</span></td>
+                            <td>@activity.DurationMinutes min</td>
+                            @* GetActivityDetails() is polymorphic — the correct subclass version runs. *@
+                            <td class="small text-muted">@activity.GetActivityDetails()</td>
+                            <td class="text-end text-nowrap">
+                                <a class="btn btn-sm btn-outline-secondary" href="admin/activities/edit/@activity.Id"><Icon Name="edit" Size="14" /> Edit</a>
+                                <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteAsync(activity.Id, activity.Title)"><Icon Name="trash" Size="14" /> Delete</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
 }
 
 @code {

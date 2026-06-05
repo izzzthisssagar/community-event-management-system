@@ -8,87 +8,93 @@
 
 <PageTitle>@(IsEdit ? "Edit Event" : "Add Event")</PageTitle>
 
-<h1 class="mb-4">@(IsEdit ? "Edit event" : "Add event")</h1>
+<PageHeader Title="@(IsEdit ? "Edit event" : "Add event")" Subtitle="Set the details and choose the venues and activities." />
 
-<EditForm Model="_model" OnValidSubmit="SaveAsync">
-    <FluentValidationValidator />
-    <ValidationSummary class="text-danger" />
-
-    <div class="row">
-        <div class="col-md-7">
-            <div class="mb-3">
-                <label class="form-label">Name</label>
-                <InputText class="form-control" @bind-Value="_model.Name" />
-                <ValidationMessage For="() => _model.Name" class="text-danger" />
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Date</label>
-                <InputDate class="form-control" @bind-Value="_model.Date" />
-                <ValidationMessage For="() => _model.Date" class="text-danger" />
-            </div>
+<div class="card">
+    <div class="card-body p-4">
+        <EditForm Model="_model" OnValidSubmit="SaveAsync">
+            <FluentValidationValidator />
+            <ValidationSummary class="text-danger" />
 
             <div class="row">
-                <div class="col mb-3">
-                    <label class="form-label">Start time</label>
-                    <input type="time" class="form-control" value="@StartTimeString" @onchange="OnStartTimeChanged" />
-                </div>
-                <div class="col mb-3">
-                    <label class="form-label">End time</label>
-                    <input type="time" class="form-control" value="@EndTimeString" @onchange="OnEndTimeChanged" />
-                    <ValidationMessage For="() => _model.EndTime" class="text-danger" />
-                </div>
-            </div>
+                <div class="col-md-7">
+                    <div class="mb-3">
+                        <label class="form-label">Name</label>
+                        <InputText class="form-control" @bind-Value="_model.Name" />
+                        <ValidationMessage For="() => _model.Name" class="text-danger" />
+                    </div>
 
-            <div class="mb-3">
-                <label class="form-label">Description</label>
-                <InputTextArea class="form-control" rows="3" @bind-Value="_model.Description" />
-                <ValidationMessage For="() => _model.Description" class="text-danger" />
-            </div>
+                    <div class="mb-3">
+                        <label class="form-label">Date</label>
+                        <InputDate class="form-control" @bind-Value="_model.Date" />
+                        <ValidationMessage For="() => _model.Date" class="text-danger" />
+                    </div>
 
-            <div class="mb-3">
-                <label class="form-label">Maximum capacity</label>
-                <InputNumber class="form-control" @bind-Value="_model.MaxCapacity" />
-                <ValidationMessage For="() => _model.MaxCapacity" class="text-danger" />
-            </div>
-        </div>
-
-        <div class="col-md-5">
-            <div class="mb-3">
-                <label class="form-label">Venues</label>
-                <div class="border rounded p-2" style="max-height: 180px; overflow-y: auto;">
-                    @foreach (Venue venue in _venues)
-                    {
-                        <div class="form-check">
-                            <input type="checkbox" class="form-check-input"
-                                   checked="@_model.SelectedVenueIds.Contains(venue.Id)"
-                                   @onchange="(e) => ToggleVenue(venue.Id, (bool)(e.Value ?? false))" />
-                            <label class="form-check-label">@venue.Name</label>
+                    <div class="row">
+                        <div class="col mb-3">
+                            <label class="form-label">Start time</label>
+                            <input type="time" class="form-control" value="@StartTimeString" @onchange="OnStartTimeChanged" />
                         </div>
-                    }
+                        <div class="col mb-3">
+                            <label class="form-label">End time</label>
+                            <input type="time" class="form-control" value="@EndTimeString" @onchange="OnEndTimeChanged" />
+                            <ValidationMessage For="() => _model.EndTime" class="text-danger" />
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <InputTextArea class="form-control" rows="3" @bind-Value="_model.Description" />
+                        <ValidationMessage For="() => _model.Description" class="text-danger" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Maximum capacity</label>
+                        <InputNumber class="form-control" @bind-Value="_model.MaxCapacity" />
+                        <ValidationMessage For="() => _model.MaxCapacity" class="text-danger" />
+                    </div>
+                </div>
+
+                <div class="col-md-5">
+                    <div class="mb-3">
+                        <label class="form-label">Venues</label>
+                        <div class="border rounded-3 p-2 picker-box">
+                            @foreach (Venue venue in _venues)
+                            {
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input"
+                                           checked="@_model.SelectedVenueIds.Contains(venue.Id)"
+                                           @onchange="(e) => ToggleVenue(venue.Id, (bool)(e.Value ?? false))" />
+                                    <label class="form-check-label">@venue.Name</label>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Activities</label>
+                        <div class="border rounded-3 p-2 picker-box">
+                            @foreach (Activity activity in _activities)
+                            {
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input"
+                                           checked="@_model.SelectedActivityIds.Contains(activity.Id)"
+                                           @onchange="(e) => ToggleActivity(activity.Id, (bool)(e.Value ?? false))" />
+                                    <label class="form-check-label">@activity.Title</label>
+                                </div>
+                            }
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="mb-3">
-                <label class="form-label">Activities</label>
-                <div class="border rounded p-2" style="max-height: 180px; overflow-y: auto;">
-                    @foreach (Activity activity in _activities)
-                    {
-                        <div class="form-check">
-                            <input type="checkbox" class="form-check-input"
-                                   checked="@_model.SelectedActivityIds.Contains(activity.Id)"
-                                   @onchange="(e) => ToggleActivity(activity.Id, (bool)(e.Value ?? false))" />
-                            <label class="form-check-label">@activity.Title</label>
-                        </div>
-                    }
-                </div>
+            <div class="d-flex gap-2 mt-2">
+                <button type="submit" class="btn btn-primary"><Icon Name="check-circle" Size="16" /> Save</button>
+                <a class="btn btn-outline-secondary" href="admin/events">Cancel</a>
             </div>
-        </div>
+        </EditForm>
     </div>
-
-    <button type="submit" class="btn btn-primary">Save</button>
-    <a class="btn btn-secondary" href="admin/events">Cancel</a>
-</EditForm>
+</div>
 
 @code {
     [Parameter]
@@ -105,9 +111,6 @@
     private string StartTimeString => _model.StartTime.ToString(@"hh\:mm");
     private string EndTimeString => _model.EndTime.ToString(@"hh\:mm");
 
-    // The time inputs give me text like "10:30". I parse that back into a TimeSpan and store it on
-    // the model. I use plain onchange handlers (rather than @bind) because the time input's typed
-    // binding does not line up with my TimeSpan property.
     private void OnStartTimeChanged(ChangeEventArgs e)
     {
         if (TimeSpan.TryParse(e.Value?.ToString(), out TimeSpan tsParsed))

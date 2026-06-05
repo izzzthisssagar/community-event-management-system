@@ -5,45 +5,54 @@
 
 <PageTitle>Manage Participants</PageTitle>
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="mb-0">Participants</h1>
-    <a class="btn btn-primary" href="admin/participants/create">Add participant</a>
-</div>
+<PageHeader Title="Participants" Subtitle="People who can register for events.">
+    <Actions>
+        <a class="btn btn-primary" href="admin/participants/create"><Icon Name="plus" Size="16" /> Add participant</a>
+    </Actions>
+</PageHeader>
 
 @if (_participants is null)
 {
-    <p>Loading...</p>
+    <LoadingSpinner />
 }
 else if (_participants.Count == 0)
 {
-    <div class="alert alert-info">No participants yet.</div>
+    <EmptyState IconName="users" Message="No participants yet.">
+        <Action>
+            <a class="btn btn-primary" href="admin/participants/create"><Icon Name="plus" Size="16" /> Add participant</a>
+        </Action>
+    </EmptyState>
 }
 else
 {
-    <table class="table table-striped align-middle">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (Participant participant in _participants)
-            {
-                <tr>
-                    <td>@participant.FullName</td>
-                    <td>@participant.Email</td>
-                    <td>@participant.PhoneNumber</td>
-                    <td class="text-end">
-                        <a class="btn btn-sm btn-outline-secondary" href="admin/participants/edit/@participant.Id">Edit</a>
-                        <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteAsync(participant.Id, participant.FullName)">Delete</button>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-striped align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (Participant participant in _participants)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@participant.FullName</td>
+                            <td>@participant.Email</td>
+                            <td>@participant.PhoneNumber</td>
+                            <td class="text-end text-nowrap">
+                                <a class="btn btn-sm btn-outline-secondary" href="admin/participants/edit/@participant.Id"><Icon Name="edit" Size="14" /> Edit</a>
+                                <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteAsync(participant.Id, participant.FullName)"><Icon Name="trash" Size="14" /> Delete</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
 }
 
 @code {

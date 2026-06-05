@@ -91,12 +91,22 @@ h1:focus {
 
 /* ----- Buttons --------------------------------------------------------- */
 .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
     border-radius: var(--radius-sm);
     font-weight: 600;
     padding: 0.5rem 1.1rem;
     /* Only transform/box-shadow/colour animate — all GPU-friendly. */
     transition: transform 160ms var(--ease-out), box-shadow 200ms var(--ease-out),
                 background-color 180ms ease, border-color 180ms ease, color 180ms ease;
+}
+
+/* Smaller buttons sit a little tighter. */
+.btn-sm {
+    gap: 0.3rem;
+    padding: 0.32rem 0.7rem;
 }
 
 /* Instant press feedback so the UI feels like it is listening. */
@@ -241,6 +251,14 @@ tbody tr {
     border-color: var(--primary);
 }
 
+/* Scrollable list of checkboxes (venue / activity pickers on the event form). */
+.picker-box {
+    max-height: 180px;
+    overflow-y: auto;
+    background: #fcfcff;
+    border-color: var(--border) !important;
+}
+
 /* ----- Badges ---------------------------------------------------------- */
 .badge {
     font-weight: 600;
@@ -298,3 +316,172 @@ tbody tr {
     .blazor-error-boundary::after {
         content: "An error has occurred."
     }
+
+/* =========================================================================
+   Design-system components (shared, reusable primitives)
+   These classes style the components in Components/Shared so the whole app
+   uses one consistent set of headers, badges, empty states and tiles.
+   ========================================================================= */
+
+.cem-icon {
+    flex: 0 0 auto;
+    vertical-align: middle;
+}
+
+/* ----- Page header ----- */
+.page-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.75rem;
+    flex-wrap: wrap;
+}
+
+.page-header__title {
+    margin: 0;
+    font-size: 1.9rem;
+}
+
+.page-header__subtitle {
+    margin: 0.3rem 0 0;
+    color: var(--muted);
+    font-size: 0.95rem;
+}
+
+.page-header__actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* ----- Status badge ----- */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.3rem 0.65rem;
+    border-radius: 999px;
+    font-size: 0.74rem;
+    font-weight: 600;
+    line-height: 1;
+}
+
+.status-badge--success { background: #e7f8f0; color: #047857; }
+.status-badge--warning { background: #fef6e7; color: #b45309; }
+.status-badge--muted   { background: #eef1f6; color: #64748b; }
+
+/* ----- Empty state ----- */
+.empty-state {
+    text-align: center;
+    padding: 3rem 1.5rem;
+    color: var(--muted);
+}
+
+.empty-state__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 62px;
+    height: 62px;
+    border-radius: 16px;
+    background: var(--primary-soft);
+    color: var(--primary);
+    margin-bottom: 1rem;
+}
+
+.empty-state__message {
+    margin: 0;
+    font-size: 0.97rem;
+}
+
+.empty-state__action {
+    margin-top: 1.25rem;
+}
+
+/* ----- Loading spinner ----- */
+.loading-spinner {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: var(--muted);
+    padding: 2rem 0;
+}
+
+.loading-spinner__ring {
+    width: 20px;
+    height: 20px;
+    border: 2.5px solid var(--primary-soft);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ----- Stat card (admin dashboard) ----- */
+.stat-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    padding: 1.35rem 1.4rem;
+    min-height: 142px;
+    border-radius: var(--radius);
+    color: #fff;
+    text-decoration: none;
+    box-shadow: var(--shadow-md);
+    transition: transform 220ms var(--ease-out), box-shadow 220ms var(--ease-out);
+}
+
+.stat-card:hover {
+    color: #fff;
+}
+
+.stat-card__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 11px;
+    background: rgba(255, 255, 255, 0.22);
+    margin-bottom: 0.7rem;
+}
+
+.stat-card__count {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 2.1rem;
+    font-weight: 700;
+    line-height: 1.1;
+}
+
+.stat-card__title {
+    font-size: 0.9rem;
+    opacity: 0.92;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+}
+
+.stat-card--primary { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+.stat-card--success { background: linear-gradient(135deg, #34d399, #059669); }
+.stat-card--info    { background: linear-gradient(135deg, #38bdf8, #0284c7); }
+.stat-card--warning { background: linear-gradient(135deg, #fbbf24, #d97706); }
+
+/* ----- Home page quick-action tiles ----- */
+.home-tile-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    margin-bottom: 0.85rem;
+    color: #fff;
+}
+
+.home-tile-icon--primary { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+.home-tile-icon--accent  { background: linear-gradient(135deg, #fb923c, #ea580c); }
+.home-tile-icon--info    { background: linear-gradient(135deg, #38bdf8, #0284c7); }

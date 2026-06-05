@@ -6,79 +6,90 @@
 
 <PageTitle>@(IsEdit ? "Edit Activity" : "Add Activity")</PageTitle>
 
-<h1 class="mb-4">@(IsEdit ? "Edit activity" : "Add activity")</h1>
+<PageHeader Title="@(IsEdit ? "Edit activity" : "Add activity")" Subtitle="A workshop, game or talk." />
 
 <div class="row">
-    <div class="col-md-6">
-        <EditForm Model="_model" OnValidSubmit="SaveAsync">
-            <FluentValidationValidator />
-            <ValidationSummary class="text-danger" />
+    <div class="col-lg-7 col-xl-6">
+        <div class="card">
+            <div class="card-body p-4">
+                <EditForm Model="_model" OnValidSubmit="SaveAsync">
+                    <FluentValidationValidator />
+                    <ValidationSummary class="text-danger" />
 
-            <div class="mb-3">
-                <label class="form-label">Activity type</label>
-                @* The type can only be chosen when creating. On edit it is fixed, because a       *@
-                @* workshop cannot suddenly become a game in the Table-Per-Hierarchy design.        *@
-                <select class="form-select" @bind="_model.ActivityType" disabled="@IsEdit">
-                    <option value="Workshop">Workshop</option>
-                    <option value="Game">Game</option>
-                    <option value="Talk">Talk</option>
-                </select>
+                    <div class="mb-3">
+                        <label class="form-label">Activity type</label>
+                        @* The type can only be chosen when creating. On edit it is fixed, because a    *@
+                        @* workshop cannot suddenly become a game in the Table-Per-Hierarchy design.     *@
+                        <select class="form-select" @bind="_model.ActivityType" disabled="@IsEdit">
+                            <option value="Workshop">Workshop</option>
+                            <option value="Game">Game</option>
+                            <option value="Talk">Talk</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Title</label>
+                        <InputText class="form-control" @bind-Value="_model.Title" />
+                        <ValidationMessage For="() => _model.Title" class="text-danger" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Duration (minutes)</label>
+                        <InputNumber class="form-control" @bind-Value="_model.DurationMinutes" />
+                        <ValidationMessage For="() => _model.DurationMinutes" class="text-danger" />
+                    </div>
+
+                    @* ----- Fields that only apply to a Workshop ----- *@
+                    @if (_model.ActivityType == "Workshop")
+                    {
+                        <div class="mb-3">
+                            <label class="form-label">Instructor name</label>
+                            <InputText class="form-control" @bind-Value="_model.InstructorName" />
+                            <ValidationMessage For="() => _model.InstructorName" class="text-danger" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Materials required</label>
+                            <InputText class="form-control" @bind-Value="_model.MaterialsRequired" />
+                            <ValidationMessage For="() => _model.MaterialsRequired" class="text-danger" />
+                        </div>
+                    }
+
+                    @* ----- Fields that only apply to a Game ----- *@
+                    @if (_model.ActivityType == "Game")
+                    {
+                        <div class="mb-3">
+                            <label class="form-label">Minimum age</label>
+                            <InputNumber class="form-control" @bind-Value="_model.MinimumAge" />
+                            <ValidationMessage For="() => _model.MinimumAge" class="text-danger" />
+                        </div>
+                        <div class="form-check mb-3">
+                            <InputCheckbox class="form-check-input" id="equipment" @bind-Value="_model.EquipmentProvided" />
+                            <label class="form-check-label" for="equipment">Equipment provided</label>
+                        </div>
+                    }
+
+                    @* ----- Fields that only apply to a Talk ----- *@
+                    @if (_model.ActivityType == "Talk")
+                    {
+                        <div class="mb-3">
+                            <label class="form-label">Speaker name</label>
+                            <InputText class="form-control" @bind-Value="_model.SpeakerName" />
+                            <ValidationMessage For="() => _model.SpeakerName" class="text-danger" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Topic</label>
+                            <InputText class="form-control" @bind-Value="_model.Topic" />
+                            <ValidationMessage For="() => _model.Topic" class="text-danger" />
+                        </div>
+                    }
+
+                    <div class="d-flex gap-2 mt-1">
+                        <button type="submit" class="btn btn-primary"><Icon Name="check-circle" Size="16" /> Save</button>
+                        <a class="btn btn-outline-secondary" href="admin/activities">Cancel</a>
+                    </div>
+                </EditForm>
             </div>
-
-            <div class="mb-3">
-                <label class="form-label">Title</label>
-                <InputText class="form-control" @bind-Value="_model.Title" />
-                <ValidationMessage For="() => _model.Title" class="text-danger" />
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Duration (minutes)</label>
-                <InputNumber class="form-control" @bind-Value="_model.DurationMinutes" />
-                <ValidationMessage For="() => _model.DurationMinutes" class="text-danger" />
-            </div>
-
-            @* ----- Fields that only apply to a Workshop ----- *@
-            @if (_model.ActivityType == "Workshop")
-            {
-                <div class="mb-3">
-                    <label class="form-label">Instructor name</label>
-                    <InputText class="form-control" @bind-Value="_model.InstructorName" />
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Materials required</label>
-                    <InputText class="form-control" @bind-Value="_model.MaterialsRequired" />
-                </div>
-            }
-
-            @* ----- Fields that only apply to a Game ----- *@
-            @if (_model.ActivityType == "Game")
-            {
-                <div class="mb-3">
-                    <label class="form-label">Minimum age</label>
-                    <InputNumber class="form-control" @bind-Value="_model.MinimumAge" />
-                </div>
-                <div class="form-check mb-3">
-                    <InputCheckbox class="form-check-input" id="equipment" @bind-Value="_model.EquipmentProvided" />
-                    <label class="form-check-label" for="equipment">Equipment provided</label>
-                </div>
-            }
-
-            @* ----- Fields that only apply to a Talk ----- *@
-            @if (_model.ActivityType == "Talk")
-            {
-                <div class="mb-3">
-                    <label class="form-label">Speaker name</label>
-                    <InputText class="form-control" @bind-Value="_model.SpeakerName" />
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Topic</label>
-                    <InputText class="form-control" @bind-Value="_model.Topic" />
-                </div>
-            }
-
-            <button type="submit" class="btn btn-primary">Save</button>
-            <a class="btn btn-secondary" href="admin/activities">Cancel</a>
-        </EditForm>
+        </div>
     </div>
 </div>
 

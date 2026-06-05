@@ -10,8 +10,8 @@
             @* Show who is signed in, plus a logout link, when there is a logged-in user. *@
             <AuthorizeView>
                 <Authorized>
-                    <span class="me-3">Signed in as <strong>@context.User.Identity?.Name</strong></span>
-                    <a href="/auth/logout" class="btn btn-sm btn-outline-secondary">Log out</a>
+                    <span class="me-2 text-muted small">Signed in as <strong class="text-dark">@context.User.Identity?.Name</strong></span>
+                    <a href="/auth/logout" class="btn btn-sm btn-outline-secondary"><Icon Name="log-out" Size="14" /> Log out</a>
                 </Authorized>
                 <NotAuthorized>
                     <a href="/login" class="btn btn-sm btn-primary">Log in</a>

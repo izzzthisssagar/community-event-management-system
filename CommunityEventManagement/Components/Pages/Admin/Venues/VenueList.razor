@@ -5,47 +5,56 @@
 
 <PageTitle>Manage Venues</PageTitle>
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="mb-0">Venues</h1>
-    <a class="btn btn-primary" href="admin/venues/create">Add venue</a>
-</div>
+<PageHeader Title="Venues" Subtitle="Places where events are held.">
+    <Actions>
+        <a class="btn btn-primary" href="admin/venues/create"><Icon Name="plus" Size="16" /> Add venue</a>
+    </Actions>
+</PageHeader>
 
 @if (_venues is null)
 {
-    <p>Loading...</p>
+    <LoadingSpinner />
 }
 else if (_venues.Count == 0)
 {
-    <div class="alert alert-info">No venues yet. Click "Add venue" to create one.</div>
+    <EmptyState IconName="map-pin" Message="No venues yet. Add your first venue to get started.">
+        <Action>
+            <a class="btn btn-primary" href="admin/venues/create"><Icon Name="plus" Size="16" /> Add venue</a>
+        </Action>
+    </EmptyState>
 }
 else
 {
-    <table class="table table-striped align-middle">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Address</th>
-                <th>Capacity</th>
-                <th>Accessible</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (Venue venue in _venues)
-            {
-                <tr>
-                    <td>@venue.Name</td>
-                    <td>@venue.Address</td>
-                    <td>@venue.Capacity</td>
-                    <td>@(venue.IsAccessible ? "Yes" : "No")</td>
-                    <td class="text-end">
-                        <a class="btn btn-sm btn-outline-secondary" href="admin/venues/edit/@venue.Id">Edit</a>
-                        <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteAsync(venue.Id, venue.Name)">Delete</button>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-striped align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Address</th>
+                        <th>Capacity</th>
+                        <th>Accessible</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (Venue venue in _venues)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@venue.Name</td>
+                            <td>@venue.Address</td>
+                            <td>@venue.Capacity</td>
+                            <td>@(venue.IsAccessible ? "Yes" : "No")</td>
+                            <td class="text-end text-nowrap">
+                                <a class="btn btn-sm btn-outline-secondary" href="admin/venues/edit/@venue.Id"><Icon Name="edit" Size="14" /> Edit</a>
+                                <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteAsync(venue.Id, venue.Name)"><Icon Name="trash" Size="14" /> Delete</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
 }
 
 @code {

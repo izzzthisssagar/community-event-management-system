@@ -1,0 +1,10 @@
+@* A small spinner shown while a page is loading its data, instead of plain "Loading..." text. *@
+
+<div class="loading-spinner">
+    <span class="loading-spinner__ring"></span>
+    <span class="loading-spinner__text">@Text</span>
+</div>
+
+@code {
+    [Parameter] public string Text { get; set; } = "Loading...";
+}
