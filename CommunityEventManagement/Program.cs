@@ -1,8 +1,11 @@
 using CommunityEventManagement.Application.Services;
+using CommunityEventManagement.Application.Validators;
 using CommunityEventManagement.Components;
 using CommunityEventManagement.Domain.Interfaces;
 using CommunityEventManagement.Infrastructure.Data;
 using CommunityEventManagement.Infrastructure.Repositories;
+using CommunityEventManagement.Models.ViewModels;
+using FluentValidation;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 
@@ -68,6 +71,15 @@ builder.Services.AddAuthorization();
 
 // This makes the signed-in user's identity available to my Blazor components as a cascading value.
 builder.Services.AddCascadingAuthenticationState();
+
+// ----- Validation -----
+// I register each FluentValidation validator against IValidator<T>. The FluentValidationValidator
+// component inside my EditForms then picks the right one up automatically and runs it.
+builder.Services.AddScoped<IValidator<EventViewModel>, EventValidator>();
+builder.Services.AddScoped<IValidator<ParticipantViewModel>, ParticipantValidator>();
+builder.Services.AddScoped<IValidator<VenueViewModel>, VenueValidator>();
+builder.Services.AddScoped<IValidator<ActivityViewModel>, ActivityValidator>();
+builder.Services.AddScoped<IValidator<LoginViewModel>, LoginViewModelValidator>();
 
 var app = builder.Build();
 
