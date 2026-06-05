@@ -62,6 +62,14 @@
     <tr><td>Application</td><td>Business logic</td><td>Services (with interfaces) and FluentValidation validators</td></tr>
     <tr><td>Presentation</td><td>The user interface and entry points</td><td>Blazor components, the MVC <code>AuthController</code>, view models</td></tr>
 </table>
+<p>
+    The diagram below shows the four layers and how they depend on one another. The arrows point
+    in the direction of the dependency. Notice that the Application layer depends on the repository
+    <em>interfaces</em> in the Domain layer, and the Infrastructure layer <em>implements</em> those
+    interfaces (the dashed arrow). This is the Repository pattern combined with dependency
+    inversion, and it is what lets me swap the real repositories for mocks in my unit tests.
+</p>
+<img src="architecture.png" alt="Layered architecture diagram" />
 
 <h2 class="pagebreak">3. UML Class Diagram</h2>
 <p>
@@ -84,7 +92,17 @@
 </p>
 <img src="erd.png" alt="Entity Relationship Diagram" />
 
-<h2 class="pagebreak">5. Object-Oriented Programming Features</h2>
+<h2 class="pagebreak">5. Registration Sequence Diagram</h2>
+<p>
+    The diagrams above show the static structure. This sequence diagram shows the dynamic behaviour
+    of the most important use case &mdash; registering a participant for an event &mdash; including
+    the path where a business rule is broken. When a participant is already registered or the event
+    is full, the <code>Event</code> entity throws one of my custom exceptions, which travels back up
+    to the page and is shown to the user as a friendly message rather than crashing.
+</p>
+<img src="sequence-registration.png" alt="Registration sequence diagram" />
+
+<h2 class="pagebreak">6. Object-Oriented Programming Features</h2>
 <table>
     <tr><th>Feature</th><th>Where it is in my code</th></tr>
     <tr><td>Inheritance</td><td>Every entity inherits from the abstract <code>BaseEntity</code>; <code>WorkshopActivity</code>, <code>GameActivity</code> and <code>TalkActivity</code> inherit from the abstract <code>Activity</code>.</td></tr>
@@ -95,7 +113,7 @@
     <tr><td>Method overloading</td><td><code>EventService.GetEventsAsync()</code> has three overloads that share a name but take different parameters.</td></tr>
 </table>
 
-<h2>6. Data Structures and Design Patterns</h2>
+<h2>7. Data Structures and Design Patterns</h2>
 <table>
     <tr><th>Pattern / technique</th><th>How I used it</th></tr>
     <tr><td>Repository pattern</td><td>An entity-specific repository behind an interface for each entity, so the services never touch EF Core directly.</td></tr>
@@ -106,7 +124,7 @@
     <tr><td>Dependency Injection</td><td>Every repository, service and validator is registered against its interface in <code>Program.cs</code>.</td></tr>
 </table>
 
-<h2>7. Validation and Exception Handling</h2>
+<h2>8. Validation and Exception Handling</h2>
 <p>
     I use <strong>FluentValidation</strong> for form validation. The main advantage over data
     annotations is cross-property rules &mdash; for example, <code>EventValidator</code> checks that
@@ -120,11 +138,22 @@
     content, logs any error, and shows the user a friendly message instead of a crash.
 </p>
 
-<h2 class="pagebreak">8. Test Plan and Results</h2>
+<h2 class="pagebreak">9. Test Plan and Results</h2>
 <p>
-    All 13 automated tests pass. They use xUnit, with repository tests running against a real
-    in-memory SQLite database, service tests using Moq, and component tests using bUnit.
+    All <strong>43 automated tests pass</strong>. They use xUnit and are deliberately spread across
+    several styles so that every layer is tested in the most appropriate way, covering the happy
+    paths, the edge cases and the boundary conditions.
 </p>
+<table>
+    <tr><th>Test group</th><th>Style</th><th>Count</th><th>What it covers</th></tr>
+    <tr><td>Entity rules</td><td>Plain xUnit</td><td>8</td><td>Duplicate registration, capacity reached exactly (boundary), re-registering after a cancellation (edge case), available-seat counting, cancellation</td></tr>
+    <tr><td>Polymorphism</td><td>Plain xUnit</td><td>4</td><td>GetActivityDetails() dispatched through base-type references to each subclass</td></tr>
+    <tr><td>Validators</td><td>FluentValidation TestHelper</td><td>10</td><td>Cross-property end-time rule, conditional per-subclass rules, boundary capacities, invalid email</td></tr>
+    <tr><td>Repositories</td><td>SQLite in-memory</td><td>7</td><td>Save with links, unknown id, filter by date/venue/activity-type (TPH discriminator), unique-index, cascade delete</td></tr>
+    <tr><td>Services</td><td>Moq</td><td>11</td><td>Register happy path, duplicate, capacity, cancelled event, not-found cases, cancel event, cancel registration</td></tr>
+    <tr><td>Components</td><td>bUnit</td><td>3</td><td>Browse list renders cards, detail shows name, register-without-participant shows error</td></tr>
+</table>
+<p>A representative selection of the individual tests:</p>
 <table>
     <tr><th>#</th><th>Test</th><th>Type</th><th>Expected result</th><th>Status</th></tr>
     <tr><td>1</td><td>Add event with venue and activity</td><td>Repository (SQLite)</td><td>Event saved with its links</td><td class="pass">Pass</td></tr>
@@ -141,10 +170,10 @@
     <tr><td>12</td><td>Event detail shows name</td><td>Component (bUnit)</td><td>Event name shown</td><td class="pass">Pass</td></tr>
     <tr><td>13</td><td>Register with no participant chosen</td><td>Component (bUnit)</td><td>Friendly error, no registration</td><td class="pass">Pass</td></tr>
 </table>
-<p>To run the tests: <code>dotnet test</code> &mdash; expected output <code>Passed! - Failed: 0, Passed: 13</code>.</p>
-<p class="placeholder">[Paste a screenshot of the Visual Studio Test Explorer showing all 13 tests green here.]</p>
+<p>To run the tests: <code>dotnet test</code> &mdash; expected output <code>Passed! - Failed: 0, Passed: 43</code>.</p>
+<p class="placeholder">[Paste a screenshot of the Visual Studio Test Explorer showing all 43 tests green here.]</p>
 
-<h2>9. How to Run the Application</h2>
+<h2>10. How to Run the Application</h2>
 <ol>
     <li>Start MySQL (this project was developed against XAMPP MySQL / MariaDB 10.4).</li>
     <li>Check the connection string in <code>CommunityEventManagement/appsettings.json</code>.</li>
