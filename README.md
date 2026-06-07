@@ -41,7 +41,16 @@ The solution is organised into clear layers to keep the code clean and easy to f
    ```bash
    dotnet run --project CommunityEventManagement
    ```
-4. The database is seeded automatically on first run with an admin account and some sample data.
+4. The database is seeded automatically on first run with sample data and two demo accounts.
+
+## Demo accounts
+
+| Role | Email | Password |
+|------|-------|----------|
+| Admin | `admin@events.com` | `Admin123!` |
+| User | `user@events.com` | `User123!` |
+
+New visitors can also create their own account from the **Create an account** link on the login page.
 
 ## Running the Tests
 
