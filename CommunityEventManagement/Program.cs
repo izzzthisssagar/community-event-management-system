@@ -50,6 +50,9 @@ builder.Services.AddScoped<IRegistrationService, RegistrationService>();
 // component share one instance per user connection.
 builder.Services.AddScoped<IToastService, ToastService>();
 
+// The account service lets a visitor create their own account (a User plus a linked Participant).
+builder.Services.AddScoped<IAccountService, AccountService>();
+
 // ----- Authentication -----
 // The user repository and the auth service handle logging people in and out.
 builder.Services.AddScoped<IUserRepository, UserRepository>();
@@ -84,6 +87,7 @@ builder.Services.AddScoped<IValidator<ParticipantViewModel>, ParticipantValidato
 builder.Services.AddScoped<IValidator<VenueViewModel>, VenueValidator>();
 builder.Services.AddScoped<IValidator<ActivityViewModel>, ActivityValidator>();
 builder.Services.AddScoped<IValidator<LoginViewModel>, LoginViewModelValidator>();
+builder.Services.AddScoped<IValidator<SignUpViewModel>, SignUpViewModelValidator>();
 
 var app = builder.Build();
 

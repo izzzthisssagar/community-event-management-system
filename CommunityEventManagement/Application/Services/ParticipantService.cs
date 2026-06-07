@@ -12,6 +12,7 @@ public interface IParticipantService
 {
     Task<List<Participant>> GetAllAsync();
     Task<Participant> GetByIdAsync(Guid guidId);
+    Task<Participant?> GetByEmailAsync(string sEmail);
     Task CreateAsync(ParticipantViewModel vmParticipant);
     Task UpdateAsync(ParticipantViewModel vmParticipant);
     Task DeleteAsync(Guid guidId);
@@ -44,6 +45,12 @@ public class ParticipantService : IParticipantService
             throw new EntityNotFoundException($"No participant was found with Id '{guidId}'.");
         }
         return foundParticipant;
+    }
+
+    public async Task<Participant?> GetByEmailAsync(string sEmail)
+    {
+        // Used to link a logged-in user to their participant profile (they share an email).
+        return await _prParticipantRepository.GetByEmailAsync(sEmail);
     }
 
     public async Task CreateAsync(ParticipantViewModel vmParticipant)

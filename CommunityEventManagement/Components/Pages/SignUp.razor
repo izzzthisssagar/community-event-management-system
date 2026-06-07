@@ -1,0 +1,100 @@
+@page "/signup"
+@layout LoginLayout
+@attribute [AllowAnonymous]
+@inject IAccountService AccountService
+@inject NavigationManager Navigation
+
+<PageTitle>Create account — Community Events</PageTitle>
+
+@* This page is interactive so the form validates as you type. Creating an account does not log you
+   in straight away — it makes your account and then sends you to the login page. *@
+
+<div class="login-card login-card--wide">
+    <div class="login-card__brand">
+        <span class="login-card__badge" aria-hidden="true">
+            <Icon Name="calendar" Size="28" />
+        </span>
+        <h1 class="login-card__title">Create your account</h1>
+        <p class="login-card__subtitle">Sign up to browse and register for community events</p>
+    </div>
+
+    @if (_errorMessage is not null)
+    {
+        <div class="alert alert-danger" role="alert">@_errorMessage</div>
+    }
+
+    <EditForm Model="_model" OnValidSubmit="SignUpAsync">
+        <FluentValidationValidator />
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">First name</label>
+                <InputText class="form-control" @bind-Value="_model.FirstName" />
+                <ValidationMessage For="() => _model.FirstName" class="text-danger" />
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Last name</label>
+                <InputText class="form-control" @bind-Value="_model.LastName" />
+                <ValidationMessage For="() => _model.LastName" class="text-danger" />
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Email</label>
+            <InputText class="form-control" @bind-Value="_model.Email" />
+            <ValidationMessage For="() => _model.Email" class="text-danger" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Phone number</label>
+            <InputText class="form-control" @bind-Value="_model.PhoneNumber" />
+            <ValidationMessage For="() => _model.PhoneNumber" class="text-danger" />
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Password</label>
+                <InputText type="password" class="form-control" @bind-Value="_model.Password" />
+                <ValidationMessage For="() => _model.Password" class="text-danger" />
+            </div>
+            <div class="col-md-6 mb-4">
+                <label class="form-label">Confirm password</label>
+                <InputText type="password" class="form-control" @bind-Value="_model.ConfirmPassword" />
+                <ValidationMessage For="() => _model.ConfirmPassword" class="text-danger" />
+            </div>
+        </div>
+
+        <LoadingButton Type="submit" Busy="_isBusy" CssClass="btn btn-primary w-100">Create account</LoadingButton>
+    </EditForm>
+
+    <div class="login-card__hint">
+        Already have an account? <a href="/login">Log in</a>
+    </div>
+</div>
+
+@code {
+    private SignUpViewModel _model = new();
+    private bool _isBusy;
+    private string? _errorMessage;
+
+    private async Task SignUpAsync()
+    {
+        _isBusy = true;
+        _errorMessage = null;
+        try
+        {
+            await AccountService.RegisterAsync(_model);
+
+            // Account made — send them to the login page with a flag so it can welcome them.
+            Navigation.NavigateTo("/login?registered=true");
+        }
+        catch (EventManagementException ex)
+        {
+            _errorMessage = ex.Message;
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+}

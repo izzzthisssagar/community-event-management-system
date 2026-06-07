@@ -1,26 +1,36 @@
 @page "/my-registrations"
 @attribute [Authorize]
+@using System.Security.Claims
 @inject IParticipantService ParticipantService
 @inject IRegistrationService RegistrationService
 
-<PageTitle>Registrations</PageTitle>
+<PageTitle>@(_isAdmin ? "Registrations" : "My Registrations")</PageTitle>
 
-<PageHeader Title="Registrations" Subtitle="See and cancel what a participant is registered for." />
+<PageHeader Title="@(_isAdmin ? "Registrations" : "My registrations")"
+            Subtitle="@(_isAdmin ? "See and cancel any participant's registrations." : "The events you have registered for.")" />
 
-<div class="row mb-4">
-    <div class="col-md-6">
-        <label class="form-label">Show registrations for participant</label>
-        <select class="form-select" @bind="SelectedParticipantId" @bind:after="LoadRegistrationsAsync">
-            <option value="@Guid.Empty">-- select a participant --</option>
-            @foreach (Participant participant in _participants)
-            {
-                <option value="@participant.Id">@participant.FullName (@participant.Email)</option>
-            }
-        </select>
+@* Admins choose whose registrations to view; a normal user just sees their own. *@
+@if (_isAdmin)
+{
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <label class="form-label">Show registrations for participant</label>
+            <select class="form-select" @bind="SelectedParticipantId" @bind:after="LoadRegistrationsAsync">
+                <option value="@Guid.Empty">-- select a participant --</option>
+                @foreach (Participant participant in _participants)
+                {
+                    <option value="@participant.Id">@participant.FullName (@participant.Email)</option>
+                }
+            </select>
+        </div>
     </div>
-</div>
+}
 
-@if (_selectedParticipantId == Guid.Empty)
+@if (!_isAdmin && !_userHasProfile)
+{
+    <EmptyState IconName="ticket" Message="Your account is not linked to a participant profile yet." />
+}
+else if (_isAdmin && _selectedParticipantId == Guid.Empty)
 {
     <EmptyState IconName="ticket" Message="Choose a participant above to see what they are registered for." />
 }
@@ -30,7 +40,11 @@ else if (_registrations is null)
 }
 else if (_registrations.Count == 0)
 {
-    <EmptyState IconName="ticket" Message="This participant has no registrations yet." />
+    <EmptyState IconName="ticket" Message="No registrations yet. Browse events to sign up." >
+        <Action>
+            <a class="btn btn-primary" href="events"><Icon Name="list" Size="16" /> Browse events</a>
+        </Action>
+    </EmptyState>
 }
 else
 {
@@ -71,11 +85,16 @@ else
 }
 
 @code {
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthState { get; set; }
+
+    private bool _isAdmin;
+    private bool _userHasProfile = true;
     private List<Participant> _participants = new();
     private List<Registration>? _registrations;
     private Guid _selectedParticipantId = Guid.Empty;
 
-    // A small property wrapper so the dropdown can bind to the selected id.
+    // A small property wrapper so the admin dropdown can bind to the selected id.
     private Guid SelectedParticipantId
     {
         get => _selectedParticipantId;
@@ -84,7 +103,35 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        _participants = await ParticipantService.GetAllAsync();
+        if (AuthState is null)
+        {
+            return;
+        }
+
+        AuthenticationState authState = await AuthState;
+        ClaimsPrincipal user = authState.User;
+        _isAdmin = user.IsInRole("Admin");
+
+        if (_isAdmin)
+        {
+            // Admin: load everyone so they can pick whose registrations to view.
+            _participants = await ParticipantService.GetAllAsync();
+        }
+        else
+        {
+            // Normal user: find their own participant profile by email and load their registrations.
+            string? sEmail = user.FindFirst(ClaimTypes.Email)?.Value;
+            Participant? me = string.IsNullOrEmpty(sEmail) ? null : await ParticipantService.GetByEmailAsync(sEmail);
+            if (me is null)
+            {
+                _userHasProfile = false;
+            }
+            else
+            {
+                _selectedParticipantId = me.Id;
+                await LoadRegistrationsAsync();
+            }
+        }
     }
 
     private async Task LoadRegistrationsAsync()

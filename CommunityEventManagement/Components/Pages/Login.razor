@@ -22,6 +22,12 @@
         <p class="login-card__subtitle">Sign in to manage and join events</p>
     </div>
 
+    @if (Registered)
+    {
+        <div class="alert alert-success" role="alert">
+            Your account has been created — please sign in.
+        </div>
+    }
     @if (Error)
     {
         <div class="alert alert-danger" role="alert">
@@ -51,7 +57,11 @@
     </form>
 
     <div class="login-card__hint">
-        Default admin: <strong>admin@events.com</strong> &middot; <strong>Admin123!</strong>
+        New here? <a href="/signup">Create an account</a>
+        <div class="mt-2">
+            Demo admin: <strong>admin@events.com</strong> / <strong>Admin123!</strong><br />
+            Demo user: <strong>user@events.com</strong> / <strong>User123!</strong>
+        </div>
     </div>
 </div>
 
@@ -60,4 +70,7 @@
     // that query string value so the page can show the error message above.
     [SupplyParameterFromQuery]
     private bool Error { get; set; }
+
+    [SupplyParameterFromQuery]
+    private bool Registered { get; set; }
 }
