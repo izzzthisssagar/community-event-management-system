@@ -9,19 +9,27 @@ polymorphism, etc. Follow this script and speak to each highlighted point. Keep 
 
 ## 0:00–1:00 — Intro & running app
 - Say your name, ID (bi95ss) and the module.
-- Show the app already running. Log in as `admin@events.com` / `Admin123!`.
+- Show the app running. There are two demo accounts — admin `admin@events.com` / `Admin123!` and
+  user `user@events.com` / `User123!`. Start logged in as the **admin**.
 - Point out the login is **cookie authentication** with a **BCrypt-hashed** password, and that the
   login form posts to an **MVC AuthController** (mention `/auth/test`).
 
-## 1:00–2:30 — Scope & functionality (10%)
-- Show the **Admin Dashboard** counts.
+## 1:00–3:00 — Scope & functionality, both roles (10%)
+**Admin role:**
+- Show the **Admin Dashboard** (counts + the upcoming-events list).
 - Create an **event**: fill the form, tick a couple of **venues** and **activities** (show the
-  many-to-many selection), save. The event appears in the list.
-- Browse as a user: open **Browse Events**, type in the search box and point out the **400ms
-  debounced search** (one query after you stop typing, not per keystroke).
-- Filter by venue and by activity type.
+  many-to-many selection), save — point out the **success toast** and the Save button's **spinner**.
 
-## 2:30–4:00 — OOP: inheritance, interfaces, polymorphism (20%)
+**User role (self-service):**
+- Log out, then either click **Create an account** (show the sign-up form validating) or log in as
+  `user@events.com` / `User123!`.
+- Point out the sidebar now shows **only** the user links — **role-based navigation**.
+- Open **Browse Events**, type in the search box and show the **400ms debounced search**; filter by
+  date, venue and activity type.
+- Open an event → **"Register me for this event"** (the user registers themselves — no dropdown).
+- Go to **Registrations** → show their **own** registration, then **Cancel** it.
+
+## 3:00–4:00 — OOP: inheritance, interfaces, polymorphism (20%)
 - Open `Domain/Entities/BaseEntity.cs` — **abstract base class**; say every entity **inherits** it.
 - Open `Activity.cs` — the **abstract class** with `WorkshopActivity`, `GameActivity`,
   `TalkActivity`. Show the abstract `GetActivityDetails()` and the three **overrides**

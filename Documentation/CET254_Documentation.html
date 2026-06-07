@@ -42,8 +42,9 @@
     <strong>Community Event Management System</strong> as a web application that lets an
     organisation manage community events, the venues those events take place at, the activities
     that make up each event, the participants who attend, and the registrations that link
-    participants to events. An administrator can manage all of the data, and signed-in users can
-    browse upcoming events and register participants for them.
+    participants to events. There are two roles: an <strong>administrator</strong> manages all of the
+    data, while a <strong>user</strong> can sign up for their own account, browse and filter upcoming
+    events, register themselves, and view or cancel their own registrations.
 </p>
 <p>
     The application is built with <strong>.NET 10</strong> using a <strong>Blazor Web App</strong>
@@ -111,6 +112,7 @@
     <tr><td>Encapsulation</td><td>Entities use private <code>List&lt;T&gt;</code> backing fields exposed as <code>IReadOnlyCollection&lt;T&gt;</code>; business rules live inside the entities (for example <code>Event.AddRegistration()</code>).</td></tr>
     <tr><td>Constructors</td><td>Every entity has dual constructors: a public one for my code and a private parameterless one for EF Core.</td></tr>
     <tr><td>Method overloading</td><td><code>EventService.GetEventsAsync()</code> has three overloads that share a name but take different parameters.</td></tr>
+    <tr><td>Composition &amp; modularisation</td><td>The interface is built from small reusable components (<code>Icon</code>, <code>PageHeader</code>, <code>StatusBadge</code>, <code>EmptyState</code>, <code>LoadingButton</code>, <code>StatCard</code>) composed together on each page.</td></tr>
 </table>
 
 <h2>7. Data Structures and Design Patterns</h2>
@@ -122,6 +124,7 @@
     <tr><td>Table-Per-Hierarchy</td><td>The <code>Activity</code> hierarchy is mapped to one table with a discriminator.</td></tr>
     <tr><td>Dynamic <code>IQueryable</code> search</td><td>The browse page builds its query from only the filters the user chose, debounced by 400ms so it does not query on every keystroke.</td></tr>
     <tr><td>Dependency Injection</td><td>Every repository, service and validator is registered against its interface in <code>Program.cs</code>.</td></tr>
+    <tr><td>Observer pattern</td><td>The <code>ToastService</code> raises an <code>OnChange</code> event that the <code>Toaster</code> component subscribes to, so any page can show a pop-up notification without being coupled to it.</td></tr>
 </table>
 
 <h2>8. Validation and Exception Handling</h2>
@@ -179,10 +182,22 @@
     <li>Check the connection string in <code>CommunityEventManagement/appsettings.json</code>.</li>
     <li>Run <code>dotnet run --project CommunityEventManagement</code>. On first run the database is
         created, migrated and seeded automatically.</li>
-    <li>Log in with the seeded admin account: <code>admin@events.com</code> / <code>Admin123!</code>.</li>
+    <li>Log in with one of the seeded demo accounts below, or click <strong>Create an account</strong>
+        on the login page to sign up as a new user.</li>
 </ol>
+
+<h3>User roles</h3>
+<p>The system has two roles, matching the brief. A new visitor can self-register through the sign-up
+    page, which creates both their login and a linked participant profile.</p>
+<table>
+    <tr><th>Role</th><th>Demo account</th><th>What they can do</th></tr>
+    <tr><td>Admin</td><td><code>admin@events.com</code> / <code>Admin123!</code></td><td>Manage events, venues, activities and participants; register any participant for an event.</td></tr>
+    <tr><td>User</td><td><code>user@events.com</code> / <code>User123!</code></td><td>Browse and filter upcoming events, register themselves, and view or cancel their own registrations.</td></tr>
+</table>
+
 <p class="placeholder">[Optional: paste screenshots of the running application &mdash; login page,
-admin event list, the browse/search page and a successful registration &mdash; here.]</p>
+admin dashboard, the browse/search page, a user self-registering, and the toast/skeleton/loading
+states &mdash; here.]</p>
 
 </body>
 </html>
