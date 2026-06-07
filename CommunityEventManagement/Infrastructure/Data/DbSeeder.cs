@@ -28,8 +28,9 @@ public static class DbSeeder
         // not exist yet, so I never have to create them by hand.
         await context.Database.MigrateAsync();
 
-        // Seed the two parts (the admin account and the sample data) and then save once.
+        // Seed the accounts and the sample data, then save once.
         await SeedAdminUserAsync(context);
+        await SeedDemoUserAsync(context);
         await SeedSampleDataAsync(context);
 
         await context.SaveChangesAsync();
@@ -50,6 +51,32 @@ public static class DbSeeder
         string sHashedPassword = BCrypt.Net.BCrypt.HashPassword("Admin123!");
         User adminUser = new User("System Administrator", "admin@events.com", sHashedPassword, "Admin");
         context.Users.Add(adminUser);
+    }
+
+    /// <summary>
+    /// Adds a normal (non-admin) demo user so the User role can be shown off. The account is linked
+    /// to a participant profile by sharing the same email, which is what lets this user register
+    /// themselves for events and see their own registrations.
+    /// </summary>
+    private static async Task SeedDemoUserAsync(ApplicationDbContext context)
+    {
+        const string sEmail = "user@events.com";
+
+        bool bUserExists = await context.Users.AnyAsync(u => u.Email == sEmail);
+        if (bUserExists)
+        {
+            return;
+        }
+
+        // Make sure a matching participant profile exists (same email links the two together).
+        bool bParticipantExists = await context.Participants.AnyAsync(p => p.Email == sEmail);
+        if (!bParticipantExists)
+        {
+            context.Participants.Add(new Participant("Demo", "User", sEmail, "07000000099"));
+        }
+
+        string sHashedPassword = BCrypt.Net.BCrypt.HashPassword("User123!");
+        context.Users.Add(new User("Demo User", sEmail, sHashedPassword, "User"));
     }
 
     /// <summary>

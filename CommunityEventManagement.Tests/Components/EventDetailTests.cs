@@ -1,4 +1,5 @@
 using Bunit;
+using Bunit.TestDoubles;
 using CommunityEventManagement.Application.Services;
 using CommunityEventManagement.Components.Pages.User;
 using CommunityEventManagement.Domain.Entities;
@@ -30,6 +31,12 @@ public class EventDetailTests : TestContext
         Services.AddSingleton(_mockEventService.Object);
         Services.AddSingleton(_mockParticipantService.Object);
         Services.AddSingleton(_mockRegistrationService.Object);
+
+        // Render as an admin so the participant picker (and its "choose a participant" validation)
+        // is shown. bUnit supplies the cascading AuthenticationState that the page reads.
+        TestAuthorizationContext authContext = this.AddTestAuthorization();
+        authContext.SetAuthorized("System Administrator");
+        authContext.SetRoles("Admin");
 
         return testEvent;
     }
