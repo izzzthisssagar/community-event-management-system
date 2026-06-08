@@ -30,6 +30,7 @@ These six standalone documents present the system in professional, industry-stan
 | `CEMS_SRS_v1.0.md` | System Requirements Specification — 13 functional requirements, NFRs, DB schema, traceability matrix. |
 | `CEMS_Test_Plan_v1.0.md` | Test plan: strategy, 43 manual test cases, the 43 automated tests mapped, and the Playwright E2E scenarios. |
 | `CEMS_Rubric_Mapping_v1.0.md` | Criterion-by-criterion mapping of how the submission targets first-class marks, with file evidence. |
+| `CEMS_Getting_Started.md` | From-scratch guide: prerequisites → run on localhost → run the unit, Selenium and Playwright tests, with troubleshooting. |
 
 > The diagrams render automatically on GitHub and in VS Code (Mermaid). To get a PNG for Word, paste
 > a diagram into <https://mermaid.live> and export it.
@@ -49,6 +50,7 @@ These six standalone documents present the system in professional, industry-stan
 The ZIP (named `THAPA_Sagar.zip`) should contain:
 
 - `/Solution/` — the full Visual Studio solution (the `CommunityEventManagement`,
-  `CommunityEventManagement.Tests` and `CommunityEventManagement.E2ETests` projects).
+  `CommunityEventManagement.Tests`, `CommunityEventManagement.SeleniumTests` and
+  `CommunityEventManagement.E2ETests` projects).
 - `/Documentation/` — the finished `.docx` plus the diagram images.
 - `bi95ss_Thapa_Sagar.txt` — a text file containing the Panopto video link.
