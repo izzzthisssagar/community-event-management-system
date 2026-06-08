@@ -16,6 +16,24 @@ This folder contains everything for the written part of the submission.
 | `05-sequence-diagram.md` | The Mermaid source for the sequence diagram. |
 | `DEMO-SCRIPT.md` | A timed 10-minute script for the Panopto demonstration, mapped to each marking area. |
 
+## Industry-format documents (v1.0)
+
+These six standalone documents present the system in professional, industry-standard format
+(mirroring real BRS / SRS / architecture deliverables). They are the detailed companions to
+`CET254_Documentation.html`.
+
+| File | What it is |
+|------|------------|
+| `CEMS_UML_v1.0.md` | All six UML models (use case, activity, class *without* & *with* relationships, ERD, sequence) as themed Mermaid diagrams. |
+| `CEMS_Architecture_v1.0.md` | System design / architecture: layers, component diagram, design patterns with file evidence. |
+| `CEMS_BRS_v1.0.md` | Business Requirements Specification — 15 numbered business rules with traceability. |
+| `CEMS_SRS_v1.0.md` | System Requirements Specification — 13 functional requirements, NFRs, DB schema, traceability matrix. |
+| `CEMS_Test_Plan_v1.0.md` | Test plan: strategy, 43 manual test cases, the 43 automated tests mapped, and the Playwright E2E scenarios. |
+| `CEMS_Rubric_Mapping_v1.0.md` | Criterion-by-criterion mapping of how the submission targets first-class marks, with file evidence. |
+
+> The diagrams render automatically on GitHub and in VS Code (Mermaid). To get a PNG for Word, paste
+> a diagram into <https://mermaid.live> and export it.
+
 ## Steps to finish the Word document
 
 1. Open `CET254_Documentation.html` in Word and save it as `THAPA_Sagar.docx` (or similar).
@@ -30,7 +48,7 @@ This folder contains everything for the written part of the submission.
 
 The ZIP (named `THAPA_Sagar.zip`) should contain:
 
-- `/Solution/` — the full Visual Studio solution (the `CommunityEventManagement` and
-  `CommunityEventManagement.Tests` projects).
+- `/Solution/` — the full Visual Studio solution (the `CommunityEventManagement`,
+  `CommunityEventManagement.Tests` and `CommunityEventManagement.E2ETests` projects).
 - `/Documentation/` — the finished `.docx` plus the diagram images.
 - `bi95ss_Thapa_Sagar.txt` — a text file containing the Panopto video link.
