@@ -20,7 +20,7 @@ way it is best verified:
 | **Unit** (services) | Service orchestration & exception logic, isolated from the database | xUnit + Moq |
 | **Integration** (repositories) | Real SQL behaviour — foreign keys, unique indexes, filters | xUnit + SQLite in-memory |
 | **Component** (UI) | Blazor components render and behave correctly | bUnit |
-| **End-to-end** (whole app) | Real user journeys through a real browser | **Microsoft.Playwright** |
+| **End-to-end** (whole app) | Real user journeys through a real browser | **Selenium WebDriver** & **Microsoft.Playwright** |
 
 The first four levels are the **43 automated tests** that ship with the solution; the fifth is the
 new **Playwright E2E** layer described in §5. Together they cover happy paths, **edge cases** (e.g.
@@ -206,14 +206,45 @@ dotnet test CommunityEventManagement.E2ETests
 
 ---
 
+## 5b. END-TO-END AUTOMATION (SELENIUM)
+
+A second isolated project — `CommunityEventManagement.SeleniumTests` — covers the same journeys using
+**Selenium WebDriver + xUnit**, as a learning-friendly alternative to Playwright. It is also gated
+(`[SeleniumFact]`, skipped unless `RUN_SELENIUM=1`), so it never affects the unit suite or the build.
+
+| ID | Scenario | Asserts |
+|----|----------|---------|
+| S-01 | Admin logs in | Dashboard ("Quick actions" / "Upcoming events") shown |
+| S-02 | Empty event form submitted | Validation messages appear; stays on the form |
+| S-03 | Browse & filter | Cards load; filtering by type keeps a healthy page |
+| S-04 | User registers for an event | "Registered successfully." shown |
+| S-05 | Duplicate registration | Friendly red alert shown, no crash |
+| S-06 | Sign-up validation | Mismatched passwords blocked; stays on /signup |
+
+### How to run the Selenium tests
+
+```bash
+# 1. Start the app (one terminal)
+dotnet run --project CommunityEventManagement
+
+# 2. Opt in and run (second terminal). Selenium Manager fetches ChromeDriver automatically.
+#    PowerShell:  $env:RUN_SELENIUM = "1"; dotnet test CommunityEventManagement.SeleniumTests
+```
+
+> Chrome runs headless by default; comment out the `--headless=new` line in `SeleniumTestBase.cs` to
+> watch the browser. Full from-scratch setup is in `CEMS_Getting_Started.md`.
+
 ## 6. HOW TO RUN EVERYTHING
 
 ```bash
 # Unit / integration / component tests (no app or DB required)
 dotnet test CommunityEventManagement.Tests        # -> Passed: 43
 
-# End-to-end (app + MySQL + browser required, see §5)
-dotnet test CommunityEventManagement.E2ETests
+# End-to-end via Selenium (app + MySQL + Chrome required, see §5b)
+#   PowerShell: $env:RUN_SELENIUM = "1"; dotnet test CommunityEventManagement.SeleniumTests
+
+# End-to-end via Playwright (app + MySQL + browser required, see §5)
+#   PowerShell: $env:RUN_E2E = "1"; dotnet test CommunityEventManagement.E2ETests
 ```
 
 Expected unit result: `Passed!  - Failed: 0, Passed: 43`.
