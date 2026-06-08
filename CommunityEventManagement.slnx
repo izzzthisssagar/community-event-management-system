@@ -2,4 +2,5 @@
   <Project Path="CommunityEventManagement.Tests/CommunityEventManagement.Tests.csproj" />
   <Project Path="CommunityEventManagement/CommunityEventManagement.csproj" />
   <Project Path="CommunityEventManagement.E2ETests/CommunityEventManagement.E2ETests.csproj" />
+  <Project Path="CommunityEventManagement.SeleniumTests/CommunityEventManagement.SeleniumTests.csproj" />
 </Solution>
