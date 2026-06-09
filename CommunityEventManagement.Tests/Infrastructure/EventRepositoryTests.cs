@@ -195,4 +195,149 @@ public class EventRepositoryTests : IDisposable
         await Assert.ThrowsAsync<DbUpdateException>(async () =>
             await registrationRepository.AddAsync(new Registration(guidEventId, guidParticipantId, "Confirmed")));
     }
+
+    // ----- GetUpcomingAsync — filters out cancelled and past events -----
+
+    [Fact]
+    public async Task GetUpcomingAsync_ExcludesCancelledEvents()
+    {
+        // Arrange — one future active event and one future but cancelled event.
+        Event activeEvent = new Event("Active", DateTime.Today.AddDays(3),
+            new TimeSpan(9, 0, 0), new TimeSpan(10, 0, 0), "x", 50);
+        Event cancelledEvent = new Event("Cancelled", DateTime.Today.AddDays(5),
+            new TimeSpan(9, 0, 0), new TimeSpan(10, 0, 0), "y", 50);
+        cancelledEvent.Cancel("Rain");
+
+        await _eventRepository.AddAsync(activeEvent, Array.Empty<Guid>(), Array.Empty<Guid>());
+        await _eventRepository.AddAsync(cancelledEvent, Array.Empty<Guid>(), Array.Empty<Guid>());
+
+        // Act
+        List<Event> results = await _eventRepository.GetUpcomingAsync();
+
+        // Assert — only the non-cancelled event appears.
+        Assert.Single(results);
+        Assert.Equal("Active", results[0].Name);
+    }
+
+    [Fact]
+    public async Task GetUpcomingAsync_ExcludesPastEvents()
+    {
+        // We cannot store a past date via the normal AddAsync flow without bypassing validation,
+        // so we write directly to the context to simulate an event that has already passed.
+        using (ApplicationDbContext ctx = _factory.CreateDbContext())
+        {
+            Event pastEvent = new Event("Past", DateTime.Today.AddDays(-1),
+                new TimeSpan(9, 0, 0), new TimeSpan(10, 0, 0), "old", 50);
+            ctx.Events.Add(pastEvent);
+            await ctx.SaveChangesAsync();
+        }
+
+        List<Event> results = await _eventRepository.GetUpcomingAsync();
+
+        Assert.Empty(results);
+    }
+
+    [Fact]
+    public async Task GetUpcomingAsync_IncludesTodaysEvents()
+    {
+        // Boundary: an event happening today must appear in the upcoming list.
+        await _eventRepository.AddAsync(
+            new Event("Today", DateTime.Today, new TimeSpan(18, 0, 0), new TimeSpan(20, 0, 0), "tonight", 100),
+            Array.Empty<Guid>(), Array.Empty<Guid>());
+
+        List<Event> results = await _eventRepository.GetUpcomingAsync();
+
+        Assert.Single(results);
+        Assert.Equal("Today", results[0].Name);
+    }
+
+    // ----- GetAllAsync -----
+
+    [Fact]
+    public async Task GetAllAsync_ReturnsAllSavedEvents()
+    {
+        await _eventRepository.AddAsync(
+            new Event("Alpha", DateTime.Today.AddDays(1), new TimeSpan(9, 0, 0), new TimeSpan(10, 0, 0), "a", 20),
+            Array.Empty<Guid>(), Array.Empty<Guid>());
+        await _eventRepository.AddAsync(
+            new Event("Beta", DateTime.Today.AddDays(2), new TimeSpan(9, 0, 0), new TimeSpan(10, 0, 0), "b", 20),
+            Array.Empty<Guid>(), Array.Empty<Guid>());
+
+        List<Event> results = await _eventRepository.GetAllAsync();
+
+        Assert.Equal(2, results.Count);
+    }
+
+    // ----- SearchAsync by search term -----
+
+    [Fact]
+    public async Task SearchAsync_BySearchTerm_ReturnsEventsWhoseNameMatches()
+    {
+        await _eventRepository.AddAsync(
+            new Event("Summer Festival", DateTime.Today.AddDays(10), new TimeSpan(12, 0, 0), new TimeSpan(20, 0, 0), "fun", 500),
+            Array.Empty<Guid>(), Array.Empty<Guid>());
+        await _eventRepository.AddAsync(
+            new Event("Winter Market", DateTime.Today.AddDays(14), new TimeSpan(10, 0, 0), new TimeSpan(18, 0, 0), "cold", 200),
+            Array.Empty<Guid>(), Array.Empty<Guid>());
+
+        List<Event> results = await _eventRepository.SearchAsync("Summer", null, null, null);
+
+        Assert.Single(results);
+        Assert.Equal("Summer Festival", results[0].Name);
+    }
+
+    [Fact]
+    public async Task SearchAsync_WithNoFilters_ReturnsAllEvents()
+    {
+        await _eventRepository.AddAsync(
+            new Event("One", DateTime.Today.AddDays(1), new TimeSpan(9, 0, 0), new TimeSpan(10, 0, 0), "x", 10),
+            Array.Empty<Guid>(), Array.Empty<Guid>());
+        await _eventRepository.AddAsync(
+            new Event("Two", DateTime.Today.AddDays(2), new TimeSpan(9, 0, 0), new TimeSpan(10, 0, 0), "y", 10),
+            Array.Empty<Guid>(), Array.Empty<Guid>());
+
+        List<Event> results = await _eventRepository.SearchAsync(null, null, null, null);
+
+        Assert.Equal(2, results.Count);
+    }
+
+    // ----- UpdateAsync -----
+
+    [Fact]
+    public async Task UpdateAsync_ChangesTheEventNameInTheDatabase()
+    {
+        // Arrange — save an event, then change its name via UpdateAsync.
+        Event original = new Event("OldName", DateTime.Today.AddDays(5),
+            new TimeSpan(9, 0, 0), new TimeSpan(10, 0, 0), "desc", 50);
+        await _eventRepository.AddAsync(original, Array.Empty<Guid>(), Array.Empty<Guid>());
+
+        Event updated = new Event("NewName", DateTime.Today.AddDays(5),
+            new TimeSpan(9, 0, 0), new TimeSpan(10, 0, 0), "desc", 50);
+        // Copy the Id so UpdateAsync knows which row to change.
+        typeof(Event).GetProperty("Id")!.SetValue(updated, original.Id);
+
+        // Act
+        await _eventRepository.UpdateAsync(updated, Array.Empty<Guid>(), Array.Empty<Guid>());
+
+        // Assert — read back and verify the name changed.
+        Event? reloaded = await _eventRepository.GetByIdAsync(original.Id);
+        Assert.Equal("NewName", reloaded!.Name);
+    }
+
+    // ----- SaveCancellationAsync -----
+
+    [Fact]
+    public async Task SaveCancellationAsync_PersistsIsCancelledAndReason()
+    {
+        Event evt = new Event("To Cancel", DateTime.Today.AddDays(3),
+            new TimeSpan(9, 0, 0), new TimeSpan(10, 0, 0), "x", 50);
+        await _eventRepository.AddAsync(evt, Array.Empty<Guid>(), Array.Empty<Guid>());
+
+        evt.Cancel("Venue unavailable");
+        await _eventRepository.SaveCancellationAsync(evt);
+
+        Event? reloaded = await _eventRepository.GetByIdAsync(evt.Id);
+        Assert.True(reloaded!.IsCancelled);
+        Assert.Equal("Venue unavailable", reloaded.CancellationReason);
+    }
 }
