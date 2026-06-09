@@ -74,7 +74,9 @@ public class EventRepository : IEventRepository
     {
         using ApplicationDbContext context = await _dcfContextFactory.CreateDbContextAsync();
 
-        DateTime dtToday = DateTime.UtcNow.Date;
+        // Use DateTime.Today (server local date) rather than DateTime.UtcNow.Date so the
+        // comparison is consistent with how Event.Date is stored (plain unzoned DateTime).
+        DateTime dtToday = DateTime.Today;
 
         // Only future events that have not been cancelled should appear on the public list.
         return await context.Events

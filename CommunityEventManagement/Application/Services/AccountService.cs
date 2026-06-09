@@ -1,7 +1,9 @@
 using CommunityEventManagement.Domain.Entities;
 using CommunityEventManagement.Domain.Exceptions;
 using CommunityEventManagement.Domain.Interfaces;
+using CommunityEventManagement.Infrastructure.Data;
 using CommunityEventManagement.Models.ViewModels;
+using Microsoft.EntityFrameworkCore;
 
 namespace CommunityEventManagement.Application.Services;
 
@@ -22,12 +24,12 @@ public interface IAccountService
 public class AccountService : IAccountService
 {
     private readonly IUserRepository _urUserRepository;
-    private readonly IParticipantRepository _prParticipantRepository;
+    private readonly IDbContextFactory<ApplicationDbContext> _dcfContextFactory;
 
-    public AccountService(IUserRepository urUserRepository, IParticipantRepository prParticipantRepository)
+    public AccountService(IUserRepository urUserRepository, IDbContextFactory<ApplicationDbContext> dcfContextFactory)
     {
         _urUserRepository = urUserRepository;
-        _prParticipantRepository = prParticipantRepository;
+        _dcfContextFactory = dcfContextFactory;
     }
 
     public async Task RegisterAsync(SignUpViewModel vmSignUp)
@@ -39,18 +41,23 @@ public class AccountService : IAccountService
             throw new EventManagementException($"An account with the email '{vmSignUp.Email}' already exists.");
         }
 
-        // Create the participant profile if one does not already exist for this email.
-        Participant? existingParticipant = await _prParticipantRepository.GetByEmailAsync(vmSignUp.Email);
-        if (existingParticipant is null)
+        // Use a single DbContext so both the Participant and User rows are saved in one
+        // SaveChangesAsync call. If either insert fails, neither is committed — previously
+        // two separate repository calls could leave an orphaned Participant with no User.
+        using ApplicationDbContext context = await _dcfContextFactory.CreateDbContextAsync();
+
+        bool bParticipantExists = await context.Participants.AnyAsync(p => p.Email == vmSignUp.Email);
+        if (!bParticipantExists)
         {
             Participant newParticipant = new Participant(
                 vmSignUp.FirstName, vmSignUp.LastName, vmSignUp.Email, vmSignUp.PhoneNumber);
-            await _prParticipantRepository.AddAsync(newParticipant);
+            context.Participants.Add(newParticipant);
         }
 
-        // Create the login account with a hashed password and the normal "User" role.
         string sHashedPassword = BCrypt.Net.BCrypt.HashPassword(vmSignUp.Password);
         User newUser = new User($"{vmSignUp.FirstName} {vmSignUp.LastName}", vmSignUp.Email, sHashedPassword, "User");
-        await _urUserRepository.AddAsync(newUser);
+        context.Users.Add(newUser);
+
+        await context.SaveChangesAsync();
     }
 }
