@@ -2,7 +2,7 @@
 
 ## GETTING STARTED — From Localhost to Testing (Step by Step)
 
-**Last Updated:** June 8, 2026 &nbsp;|&nbsp; **Author:** Sagar Thapa (bi95ss) &nbsp;|&nbsp; **Module:** CET254
+**Last Updated:** June 9, 2026 &nbsp;|&nbsp; **Author:** Sagar Thapa (bi95ss) &nbsp;|&nbsp; **Module:** CET254
 
 This guide takes you from a fresh machine all the way to running the app **and** all three test
 suites (unit, Selenium, Playwright). Commands are shown for **PowerShell** (the default Windows
@@ -67,8 +67,8 @@ From the project root:
 dotnet run --project CommunityEventManagement --launch-profile http
 ```
 
-- On the **first run** the database is created and **seeded** automatically (sample events, venues,
-  activities, participants, and the two demo accounts).
+- On the **first run** the database is created and **seeded** automatically with the two demo
+  accounts plus **10+ sample records per entity** (11 events, 10 venues, 11 activities, 10 participants).
 - When you see `Now listening on: http://localhost:5131`, open that address in Chrome:
 
   **http://localhost:5131**
@@ -90,6 +90,9 @@ Things to try: the admin dashboard, create an event, then log in as the user, **
 the search box (notice the 400 ms debounce) and the date / venue / type filters, open an event and
 **Register me for this event**.
 
+> **Password visibility:** both the login page and the sign-up page have an eye icon inside the
+> password field. Click it to reveal or hide the password you are typing.
+
 ---
 
 ## 5. RUN THE UNIT TESTS (no browser needed)
@@ -104,10 +107,10 @@ dotnet test CommunityEventManagement.Tests
 Expected:
 
 ```
-Passed!  - Failed: 0, Passed: 43, Skipped: 0
+Passed!  - Failed: 0, Passed: 93, Skipped: 0
 ```
 
-These are the 43 xUnit / SQLite-in-memory / Moq / bUnit / FluentValidation tests.
+These are the 93 xUnit / SQLite-in-memory / Moq / bUnit / FluentValidation tests.
 
 ---
 
@@ -175,7 +178,7 @@ so you get a clean result without any setup:
 
 ```powershell
 dotnet test
-# Passed: 43, Skipped: 12   (the 12 are the browser tests, off by default)
+# Passed: 93, Skipped: 12   (the 12 are the browser tests, off by default)
 ```
 
 To include the browser tests, start the app, set **both** flags, then run:
@@ -207,7 +210,7 @@ dotnet test
 dotnet run --project CommunityEventManagement --launch-profile http      # http://localhost:5131
 
 # unit tests (no browser)
-dotnet test CommunityEventManagement.Tests                               # 43 passed
+dotnet test CommunityEventManagement.Tests                               # 93 passed
 
 # selenium tests (app must be running)
 $env:RUN_SELENIUM = "1"; dotnet test CommunityEventManagement.SeleniumTests

@@ -1,3 +1,4 @@
+using System.Data;
 using CommunityEventManagement.Domain.Entities;
 using CommunityEventManagement.Domain.Exceptions;
 using CommunityEventManagement.Domain.Interfaces;
@@ -54,8 +55,41 @@ public class RegistrationRepository : IRegistrationRepository
     public async Task AddAsync(Registration newRegistration)
     {
         using ApplicationDbContext context = await _dcfContextFactory.CreateDbContextAsync();
-        context.Registrations.Add(newRegistration);
-        await context.SaveChangesAsync();
+
+        // Use a serializable transaction so the capacity COUNT and the INSERT are atomic.
+        // Without this, two concurrent requests could both read 0 active registrations for a
+        // capacity-1 event, both pass the in-memory check in RegistrationService, and both
+        // persist — silently exceeding the event's maximum capacity.
+        using Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction transaction =
+            await context.Database.BeginTransactionAsync(IsolationLevel.Serializable);
+        try
+        {
+            int iMaxCapacity = await context.Events
+                .Where(e => e.Id == newRegistration.EventId)
+                .Select(e => e.MaxCapacity)
+                .FirstOrDefaultAsync();
+
+            if (iMaxCapacity > 0)
+            {
+                int iActiveCount = await context.Registrations
+                    .CountAsync(r => r.EventId == newRegistration.EventId && !r.IsCancelled);
+
+                if (iActiveCount >= iMaxCapacity)
+                {
+                    throw new VenueCapacityExceededException(
+                        $"This event has reached its maximum capacity of {iMaxCapacity}.");
+                }
+            }
+
+            context.Registrations.Add(newRegistration);
+            await context.SaveChangesAsync();
+            await transaction.CommitAsync();
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
     }
 
     public async Task UpdateAsync(Registration updatedRegistration)

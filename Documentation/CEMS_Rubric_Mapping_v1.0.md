@@ -2,7 +2,7 @@
 
 ## MARKING-CRITERIA MAPPING — HOW THIS SUBMISSION TARGETS FIRST-CLASS (70–100%)
 
-**Document Status:** ✅ FINALISED &nbsp;|&nbsp; **Release:** v1.0 &nbsp;|&nbsp; **Last Updated:** June 8, 2026
+**Document Status:** ✅ FINALISED &nbsp;|&nbsp; **Release:** v1.0 &nbsp;|&nbsp; **Last Updated:** June 9, 2026
 **Module:** CET254 Advanced Programming — Assignment 1 &nbsp;|&nbsp; **Author:** Sagar Thapa (bi95ss)
 **Classification:** Academic Submission — University of Sunderland
 
@@ -60,10 +60,12 @@ all scenarios, **edge cases and boundary conditions**, demonstrating robustness.
 
 **What the submission delivers** (`CEMS_Test_Plan_v1.0.md`):
 
-- **43 automated tests** across five complementary methods (xUnit, SQLite in-memory, Moq, bUnit,
+- **93 automated tests** across five complementary methods (xUnit, SQLite in-memory, Moq, bUnit,
   FluentValidation.TestHelper) — plus a **Playwright E2E** layer.
-- Explicit **edge cases** (re-register after cancellation) and **boundary conditions** (capacity
-  reached *exactly*; end-time equal to start-time) are tested, not just happy paths.
+- Explicit **edge cases** (re-register after cancellation, `Cancel()` called twice, all-cancelled
+  seats freed) and **boundary conditions** (capacity reached *exactly*; end-time equal to start-time;
+  BCrypt 72-char password limit; date today; UpdateEventAsync capacity exactly equals active count)
+  are tested, not just happy paths.
 - A real, justified choice of methods (e.g. SQLite-in-memory enforces FKs and the unique index — and
   actually caught a genuine cross-provider bug).
 - 43 manual test cases documented with steps, data, expected results and status.
@@ -171,7 +173,9 @@ implemented effectively, exceeding expectations; polished product and outstandin
 - **Two roles** done properly — admin back office **and** real self-service for users (sign-up,
   self-register, own bookings) — which directly satisfies the scenario's user-facing requirement.
 - Beyond the brief: professional SaaS UI (design system, toasts, skeleton loaders, responsive +
-  accessible), seeded demo data and accounts.
+  accessible), **password visibility toggle** on login and sign-up pages, and **10+ seeded records
+  per entity** (11 events, 10 venues, 11 activities, 10 participants) so the app is fully usable
+  on first run.
 
 **Why it's first-class:** every brief feature is present and working, the self-service role exceeds a
 minimal interpretation, and the UX is polished.
@@ -202,7 +206,7 @@ the marking areas, so nothing is left implicit.
 ## FIRST-CLASS READINESS CHECKLIST
 
 - [x] UML: 6 diagrams, all relationship types, consistent professional theme, error-free.
-- [x] Testing: 43 automated tests + E2E; happy, edge **and** boundary cases; methods justified.
+- [x] Testing: 93 automated tests + E2E; happy, edge **and** boundary cases; methods justified.
 - [x] OO: inheritance, **two kinds** of polymorphism, overloading, encapsulation, valid constructors.
 - [x] Patterns: Repository, Service, Factory, Observer, DI; dynamic query + debounce algorithms.
 - [x] Validation/Exceptions: custom hierarchy + cross-field/conditional validation + error boundary.

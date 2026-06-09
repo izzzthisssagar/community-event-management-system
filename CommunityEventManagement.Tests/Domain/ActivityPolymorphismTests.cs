@@ -61,4 +61,69 @@ public class ActivityPolymorphismTests
         Assert.StartsWith("Game", allDetails[1]);
         Assert.StartsWith("Talk", allDetails[2]);
     }
+
+    // ----- Each subclass stores and surfaces its own specific data correctly -----
+
+    [Fact]
+    public void WorkshopActivity_MaterialsRequired_IsIncludedInDetails()
+    {
+        Activity activity = new WorkshopActivity("Pottery", 90, "Jane Smith", "Clay and tools");
+
+        string details = activity.GetActivityDetails();
+
+        Assert.Contains("Clay and tools", details);
+    }
+
+    [Fact]
+    public void GameActivity_WhenEquipmentIsProvided_DetailsReflectTrue()
+    {
+        Activity activity = new GameActivity("Football", 60, 12, true);
+
+        string details = activity.GetActivityDetails();
+
+        // The details string must mention that equipment is provided.
+        Assert.Contains("True", details, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void GameActivity_WhenEquipmentIsNotProvided_DetailsReflectFalse()
+    {
+        Activity activity = new GameActivity("Chess", 60, 8, false);
+
+        string details = activity.GetActivityDetails();
+
+        Assert.Contains("False", details, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void TalkActivity_TopicIsIncludedInDetails()
+    {
+        Activity activity = new TalkActivity("Climate Change", 45, "Dr Green", "Carbon neutrality");
+
+        string details = activity.GetActivityDetails();
+
+        Assert.Contains("Carbon neutrality", details);
+    }
+
+    [Fact]
+    public void AllActivitySubclasses_DurationIsStoredOnBaseClass()
+    {
+        // DurationMinutes is defined on the base Activity class; all subclasses must inherit it.
+        Activity workshop = new WorkshopActivity("Art", 90, "Tutor", "Paint");
+        Activity game = new GameActivity("Tag", 30, 6, true);
+        Activity talk = new TalkActivity("History", 60, "Prof", "Wars");
+
+        Assert.Equal(90, workshop.DurationMinutes);
+        Assert.Equal(30, game.DurationMinutes);
+        Assert.Equal(60, talk.DurationMinutes);
+    }
+
+    [Fact]
+    public void ActivitySubclasses_AreAllAssignableToBaseActivityType()
+    {
+        // This confirms the inheritance hierarchy is correctly set up.
+        Assert.IsAssignableFrom<Activity>(new WorkshopActivity("W", 60, "T", "M"));
+        Assert.IsAssignableFrom<Activity>(new GameActivity("G", 60, 10, true));
+        Assert.IsAssignableFrom<Activity>(new TalkActivity("T", 45, "S", "Top"));
+    }
 }

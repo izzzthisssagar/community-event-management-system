@@ -112,4 +112,99 @@ public class EventEntityTests
 
         Assert.Empty(sut.Activities);
     }
+
+    // ----- GetAvailableSeats edge cases -----
+
+    [Fact]
+    public void GetAvailableSeats_WhenNoRegistrationsExist_ReturnsFullCapacity()
+    {
+        // Boundary: fresh event with no registrations — all seats available.
+        Event sut = MakeEvent(iCapacity: 10);
+
+        Assert.Equal(10, sut.GetAvailableSeats());
+    }
+
+    [Fact]
+    public void GetAvailableSeats_WhenAllRegistrationsAreCancelled_ReturnsFullCapacity()
+    {
+        // Edge case: cancelled registrations must not count against available seats.
+        Event sut = MakeEvent(iCapacity: 3);
+        Registration r1 = sut.AddRegistration(MakeParticipant("a@b.com"), "Confirmed");
+        Registration r2 = sut.AddRegistration(MakeParticipant("c@d.com"), "Confirmed");
+        r1.Cancel("withdrawn");
+        r2.Cancel("withdrawn");
+
+        Assert.Equal(3, sut.GetAvailableSeats());
+    }
+
+    [Fact]
+    public void AddRegistration_CancelledRegistrationDoesNotBlockCapacity()
+    {
+        // Edge case: a cancelled registration must free the seat for someone new.
+        Event sut = MakeEvent(iCapacity: 1);
+        Registration first = sut.AddRegistration(MakeParticipant("a@b.com"), "Confirmed");
+        first.Cancel("leaving");
+
+        // This should succeed — the one seat is free again.
+        Registration second = sut.AddRegistration(MakeParticipant("b@c.com"), "Confirmed");
+
+        Assert.NotNull(second);
+        Assert.Equal(1, sut.Registrations.Count(r => !r.IsCancelled));
+    }
+
+    // ----- Activity deduplication (parallel to venue deduplication) -----
+
+    [Fact]
+    public void AddActivity_DoesNotAddTheSameActivityTwice()
+    {
+        Event sut = MakeEvent();
+        WorkshopActivity activity = new WorkshopActivity("Painting", 60, "Bob", "Paint");
+
+        sut.AddActivity(activity);
+        sut.AddActivity(activity);
+
+        Assert.Single(sut.Activities);
+    }
+
+    // ----- Venue removal -----
+
+    [Fact]
+    public void RemoveVenue_RemovesAPreviouslyAddedVenue()
+    {
+        Event sut = MakeEvent();
+        Venue venue = new Venue("Hall", "Road", 200, true);
+        sut.AddVenue(venue);
+
+        sut.RemoveVenue(venue);
+
+        Assert.Empty(sut.Venues);
+    }
+
+    // ----- Cancel idempotency -----
+
+    [Fact]
+    public void Cancel_WhenCalledTwice_CancellationReasonIsFromFirstCall()
+    {
+        // Cancelling an already-cancelled event should not overwrite the original reason.
+        Event sut = MakeEvent();
+        sut.Cancel("First reason");
+        sut.Cancel("Second reason");
+
+        // The event is cancelled and the first reason is preserved.
+        Assert.True(sut.IsCancelled);
+        Assert.Equal("First reason", sut.CancellationReason);
+    }
+
+    // ----- UpdatedAt is set on Cancel -----
+
+    [Fact]
+    public void Cancel_SetsUpdatedAtToApproximatelyNow()
+    {
+        Event sut = MakeEvent();
+        DateTime dtBefore = DateTime.UtcNow.AddSeconds(-1);
+
+        sut.Cancel("rain");
+
+        Assert.True(sut.UpdatedAt >= dtBefore);
+    }
 }

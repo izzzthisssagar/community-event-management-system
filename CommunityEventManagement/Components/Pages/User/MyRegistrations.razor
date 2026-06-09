@@ -34,20 +34,27 @@ else if (_isAdmin && _selectedParticipantId == Guid.Empty)
 {
     <EmptyState IconName="ticket" Message="Choose a participant above to see what they are registered for." />
 }
-else if (_registrations is null)
-{
-    <SkeletonTable Rows="3" />
-}
-else if (_registrations.Count == 0)
-{
-    <EmptyState IconName="ticket" Message="No registrations yet. Browse events to sign up." >
-        <Action>
-            <a class="btn btn-primary" href="events"><Icon Name="list" Size="16" /> Browse events</a>
-        </Action>
-    </EmptyState>
-}
 else
 {
+    @* Error is independent so it can appear alongside the table after a failed cancel. *@
+    @if (_errorMessage is not null)
+    {
+        <div class="alert alert-danger mt-2">@_errorMessage</div>
+    }
+    @if (_registrations is null)
+    {
+        <SkeletonTable Rows="3" />
+    }
+    else if (_registrations.Count == 0)
+    {
+        <EmptyState IconName="ticket" Message="No registrations yet. Browse events to sign up." >
+            <Action>
+                <a class="btn btn-primary" href="events"><Icon Name="list" Size="16" /> Browse events</a>
+            </Action>
+        </EmptyState>
+    }
+    else
+    {
     <div class="card">
         <div class="table-responsive">
             <table class="table table-striped align-middle mb-0">
@@ -82,6 +89,7 @@ else
             </table>
         </div>
     </div>
+    }
 }
 
 @code {
@@ -93,6 +101,7 @@ else
     private List<Participant> _participants = new();
     private List<Registration>? _registrations;
     private Guid _selectedParticipantId = Guid.Empty;
+    private string? _errorMessage;
 
     // A small property wrapper so the admin dropdown can bind to the selected id.
     private Guid SelectedParticipantId
@@ -147,8 +156,20 @@ else
 
     private async Task CancelRegistrationAsync(Guid guidRegistrationId)
     {
-        // Cancel through the service (which uses the registration's own Cancel method), then reload.
-        await RegistrationService.CancelRegistrationAsync(guidRegistrationId, "Cancelled by the user.");
-        await LoadRegistrationsAsync();
+        _errorMessage = null;
+        try
+        {
+            // Cancel through the service (which uses the registration's own Cancel method), then reload.
+            await RegistrationService.CancelRegistrationAsync(guidRegistrationId, "Cancelled by the user.");
+            await LoadRegistrationsAsync();
+        }
+        catch (EventManagementException ex)
+        {
+            _errorMessage = ex.Message;
+        }
+        catch (Exception)
+        {
+            _errorMessage = "An unexpected error occurred while cancelling your registration.";
+        }
     }
 }

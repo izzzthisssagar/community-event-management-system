@@ -230,6 +230,13 @@ else
             // message, so I show it gracefully here instead of letting it crash the page.
             _errorMessage = ex.Message;
         }
+        catch (Exception)
+        {
+            // A DB-level exception (e.g. unique-index violation from a concurrent registration)
+            // is not an EventManagementException, so we catch it separately to avoid crashing
+            // the Blazor circuit.
+            _errorMessage = "An unexpected error occurred. Please refresh and try again.";
+        }
         finally
         {
             _isRegistering = false;

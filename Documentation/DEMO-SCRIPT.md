@@ -21,8 +21,9 @@ polymorphism, etc. Follow this script and speak to each highlighted point. Keep 
   many-to-many selection), save — point out the **success toast** and the Save button's **spinner**.
 
 **User role (self-service):**
-- Log out, then either click **Create an account** (show the sign-up form validating) or log in as
-  `user@events.com` / `User123!`.
+- Log out, then click **Create an account** — point out the **eye icon** on the password fields
+  (click to reveal / hide what you typed). Then log in as `user@events.com` / `User123!` and show
+  the same eye toggle on the login page.
 - Point out the sidebar now shows **only** the user links — **role-based navigation**.
 - Open **Browse Events**, type in the search box and show the **400ms debounced search**; filter by
   date, venue and activity type.
@@ -58,7 +59,7 @@ polymorphism, etc. Follow this script and speak to each highlighted point. Keep 
   handled gracefully. Open `CustomErrorBoundary.razor` to show the global safety net.
 
 ## 6:30–8:30 — Testing (10%)
-- Open the Test Explorer, run all tests, show **43 green**.
+- Open the Test Explorer, run all tests, show **93 green**.
 - Open `EventRepositoryTests.cs` (SQLite in-memory — explain it enforces real FKs/unique indexes),
   `RegistrationServiceTests.cs` (Moq), `ValidatorTests.cs` (boundary + cross-property), and
   `ActivityPolymorphismTests.cs` (calling `GetActivityDetails()` through base references).

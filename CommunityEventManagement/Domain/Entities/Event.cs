@@ -65,6 +65,7 @@ public class Event : BaseEntity, ICancelable
     /// </summary>
     public void Cancel(string sReason)
     {
+        if (IsCancelled) return;
         IsCancelled = true;
         CancellationReason = sReason;
         UpdatedAt = DateTime.UtcNow;

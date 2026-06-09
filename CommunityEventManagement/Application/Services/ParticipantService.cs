@@ -78,6 +78,14 @@ public class ParticipantService : IParticipantService
             throw new EventManagementException("Cannot update a participant without an Id.");
         }
 
+        // Mirror the duplicate-email guard from CreateAsync. Exclude the participant being
+        // edited (same Id) so they can save without changing their email.
+        Participant? duplicate = await _prParticipantRepository.GetByEmailAsync(vmParticipant.Email);
+        if (duplicate is not null && duplicate.Id != vmParticipant.Id.Value)
+        {
+            throw new EventManagementException($"A participant with the email '{vmParticipant.Email}' already exists.");
+        }
+
         // Load the existing participant so I keep its correct Id, then copy on the new values.
         Participant existingParticipant = await GetByIdAsync(vmParticipant.Id.Value);
         existingParticipant.FirstName = vmParticipant.FirstName;
