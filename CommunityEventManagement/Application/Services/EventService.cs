@@ -118,6 +118,15 @@ public class EventService : IEventService
 
         // Load the existing event so I have its correct Id, then copy the new values onto it.
         Event existingEvent = await GetEventByIdAsync(vmEvent.Id.Value);
+
+        // Guard: don't allow reducing capacity below the current confirmed registration count.
+        int iActiveRegistrations = existingEvent.Registrations.Count(r => !r.IsCancelled);
+        if (vmEvent.MaxCapacity < iActiveRegistrations)
+        {
+            throw new EventManagementException(
+                $"Cannot reduce capacity to {vmEvent.MaxCapacity}: the event already has {iActiveRegistrations} confirmed registration(s).");
+        }
+
         existingEvent.Name = vmEvent.Name;
         existingEvent.Date = vmEvent.Date;
         existingEvent.StartTime = vmEvent.StartTime;

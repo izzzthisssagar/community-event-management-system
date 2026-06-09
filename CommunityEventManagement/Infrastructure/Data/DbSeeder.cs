@@ -28,11 +28,13 @@ public static class DbSeeder
         // not exist yet, so I never have to create them by hand.
         await context.Database.MigrateAsync();
 
-        // Seed the accounts and the sample data, then save once.
+        // Save accounts first so a failure in sample data never prevents login.
         await SeedAdminUserAsync(context);
         await SeedDemoUserAsync(context);
-        await SeedSampleDataAsync(context);
+        await context.SaveChangesAsync();
 
+        // Sample data is saved separately so its failure is isolated.
+        await SeedSampleDataAsync(context);
         await context.SaveChangesAsync();
     }
 
