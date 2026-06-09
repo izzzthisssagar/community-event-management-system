@@ -83,9 +83,16 @@ else
             return;
         }
 
-        await EventService.CancelEventAsync(guidId, sReason);
-        ToastService.ShowSuccess("The event was cancelled.");
-        await LoadAsync();
+        try
+        {
+            await EventService.CancelEventAsync(guidId, sReason);
+            ToastService.ShowSuccess("The event was cancelled.");
+            await LoadAsync();
+        }
+        catch (EventManagementException ex)
+        {
+            ToastService.ShowError(ex.Message);
+        }
     }
 
     private async Task DeleteAsync(Guid guidId, string sName)
@@ -96,8 +103,15 @@ else
             return;
         }
 
-        await EventService.DeleteEventAsync(guidId);
-        ToastService.ShowSuccess($"Event '{sName}' was deleted.");
-        await LoadAsync();
+        try
+        {
+            await EventService.DeleteEventAsync(guidId);
+            ToastService.ShowSuccess($"Event '{sName}' was deleted.");
+            await LoadAsync();
+        }
+        catch (EventManagementException ex)
+        {
+            ToastService.ShowError(ex.Message);
+        }
     }
 }
