@@ -162,7 +162,9 @@ flowchart LR
 ```
 
 On startup the application creates a DI scope and runs `DbSeeder.SeedAsync`, which applies migrations
-(creating the schema if needed) and inserts the default admin account, a demo user and sample data.
+(creating the schema if needed) and inserts the default admin account, a demo user and **10+ sample
+records per entity** — 11 events, 10 venues, 11 activities (all three subclasses represented), and
+10 participants — so the application is fully usable immediately after first run.
 
 ---
 

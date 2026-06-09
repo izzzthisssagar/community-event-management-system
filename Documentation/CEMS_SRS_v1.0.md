@@ -49,6 +49,7 @@ system does and how it is built*.
 3. Three roles — Administrator, Registered User, Visitor — gate navigation and pages.
 4. The login form posts to an MVC `AuthController` so the cookie is written during a real HTTP
    request (Blazor SSR cannot set cookies mid-render).
+5. The password field has a **visibility toggle** (eye icon) so users can confirm what they typed.
 
 **Service & Methods:**
 
@@ -270,6 +271,7 @@ IEventService.CancelEventAsync(Guid id, string reason)  // calls Event.Cancel(re
 1. Sign-up captures full name, e-mail and password (with confirm-password).
 2. The system creates a login `User` (BCrypt hash) and a linked `Participant` (same e-mail).
 3. Validation enforces e-mail format, password complexity and matching confirmation.
+4. Both password fields have a **visibility toggle** (eye icon) so users can check what they typed.
 
 **Service & Methods:**
 

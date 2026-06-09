@@ -47,7 +47,7 @@ capacity reached exactly, BCrypt 72-char password limit, date today, start == en
 | OS | Windows |
 | Runtime | .NET 10 SDK |
 | Unit/integration DB | SQLite in-memory (created per test) |
-| E2E DB | MySQL/MariaDB (XAMPP) with seeded demo data |
+| E2E DB | MySQL/MariaDB (XAMPP) with seeded demo data (11 events, 10 venues, 11 activities, 10 participants) |
 | Demo accounts | Admin `admin@events.com` / `Admin123!` · User `user@events.com` / `User123!` |
 | Unit test command | `dotnet test` |
 | App run command | `dotnet run --project CommunityEventManagement` |
@@ -127,14 +127,23 @@ Legend: **P** = Pass (verified). Steps assume the app is running and seeded.
 | TC-38 | Sign up (happy) | Open `/signup`, complete form | new unique email | User + linked Participant created; can log in | P |
 | TC-39 | Password mismatch | Enter non-matching confirm password | mismatch | Validation error; not created | P |
 | TC-40 | Sign up existing e-mail | Use an e-mail already in use | existing email | Rejected with message | P |
+| TC-41 | Sign-up password visibility | Click the eye icon on the Password field | any password text | Field switches to plain text; icon changes to eye-slash; clicking again hides it | P |
+| TC-42 | Sign-up confirm-password visibility | Click the eye icon on the Confirm Password field | any password text | Same toggle behaviour, independent from the Password field toggle | P |
 
-### 3.7 Error Handling & Robustness
+### 3.7 Password Visibility (Login)
 
 | ID | Scenario | Steps | Test data | Expected result | Status |
 |----|----------|-------|-----------|-----------------|:------:|
-| TC-41 | Unknown event id | Navigate to a non-existent event | bad Guid | EventNotFoundException → friendly page, no stack trace | P |
-| TC-42 | Unknown route | Visit a non-existent URL | `/nope` | Friendly `/not-found` page | P |
-| TC-43 | Error boundary | Trigger a domain exception in the UI | duplicate reg | CustomErrorBoundary shows friendly message | P |
+| TC-43 | Login password visibility | On `/login`, click the eye icon next to the Password field | type a password | Input switches to plain text so the typed value is readable; icon becomes eye-slash | P |
+| TC-44 | Login password hide again | Click the eye-slash icon | password visible | Input switches back to masked (••••); icon reverts to eye | P |
+
+### 3.8 Error Handling & Robustness
+
+| ID | Scenario | Steps | Test data | Expected result | Status |
+|----|----------|-------|-----------|-----------------|:------:|
+| TC-45 | Unknown event id | Navigate to a non-existent event | bad Guid | EventNotFoundException → friendly page, no stack trace | P |
+| TC-46 | Unknown route | Visit a non-existent URL | `/nope` | Friendly `/not-found` page | P |
+| TC-47 | Error boundary | Trigger a domain exception in the UI | duplicate reg | CustomErrorBoundary shows friendly message | P |
 
 ---
 

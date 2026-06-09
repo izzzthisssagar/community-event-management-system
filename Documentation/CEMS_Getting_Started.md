@@ -67,8 +67,8 @@ From the project root:
 dotnet run --project CommunityEventManagement --launch-profile http
 ```
 
-- On the **first run** the database is created and **seeded** automatically (sample events, venues,
-  activities, participants, and the two demo accounts).
+- On the **first run** the database is created and **seeded** automatically with the two demo
+  accounts plus **10+ sample records per entity** (11 events, 10 venues, 11 activities, 10 participants).
 - When you see `Now listening on: http://localhost:5131`, open that address in Chrome:
 
   **http://localhost:5131**
@@ -89,6 +89,9 @@ You can also click **Create an account** on the login page to make a brand-new u
 Things to try: the admin dashboard, create an event, then log in as the user, **Browse Events**, use
 the search box (notice the 400 ms debounce) and the date / venue / type filters, open an event and
 **Register me for this event**.
+
+> **Password visibility:** both the login page and the sign-up page have an eye icon inside the
+> password field. Click it to reveal or hide the password you are typing.
 
 ---
 

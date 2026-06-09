@@ -173,7 +173,9 @@ implemented effectively, exceeding expectations; polished product and outstandin
 - **Two roles** done properly — admin back office **and** real self-service for users (sign-up,
   self-register, own bookings) — which directly satisfies the scenario's user-facing requirement.
 - Beyond the brief: professional SaaS UI (design system, toasts, skeleton loaders, responsive +
-  accessible), seeded demo data and accounts.
+  accessible), **password visibility toggle** on login and sign-up pages, and **10+ seeded records
+  per entity** (11 events, 10 venues, 11 activities, 10 participants) so the app is fully usable
+  on first run.
 
 **Why it's first-class:** every brief feature is present and working, the self-service role exceeds a
 minimal interpretation, and the UX is polished.
