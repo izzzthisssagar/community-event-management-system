@@ -58,6 +58,15 @@ public class AccountService : IAccountService
         User newUser = new User($"{vmSignUp.FirstName} {vmSignUp.LastName}", vmSignUp.Email, sHashedPassword, "User");
         context.Users.Add(newUser);
 
-        await context.SaveChangesAsync();
+        try
+        {
+            await context.SaveChangesAsync();
+        }
+        catch (DbUpdateException)
+        {
+            // A concurrent sign-up with the same email hit the unique index before this one
+            // committed. Surface it as the same friendly message the pre-check produces.
+            throw new EventManagementException($"An account with the email '{vmSignUp.Email}' already exists.");
+        }
     }
 }

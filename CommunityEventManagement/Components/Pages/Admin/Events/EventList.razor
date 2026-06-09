@@ -93,6 +93,10 @@ else
         {
             ToastService.ShowError(ex.Message);
         }
+        catch (Exception)
+        {
+            ToastService.ShowError("An unexpected error occurred. Please try again.");
+        }
     }
 
     private async Task DeleteAsync(Guid guidId, string sName)
@@ -112,6 +116,10 @@ else
         catch (EventManagementException ex)
         {
             ToastService.ShowError(ex.Message);
+        }
+        catch (Exception)
+        {
+            ToastService.ShowError("An unexpected error occurred. Please try again.");
         }
     }
 }

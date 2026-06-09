@@ -148,9 +148,18 @@ else
     {
         await InvokeAsync(async () =>
         {
-            // This calls the third (multi-filter) overload of GetEventsAsync, which builds the
-            // IQueryable dynamically and runs one efficient SQL query against the database.
-            _events = await EventService.GetEventsAsync(_searchTerm, _filterDate, _filterVenueId, _filterActivityType);
+            try
+            {
+                // This calls the third (multi-filter) overload of GetEventsAsync, which builds the
+                // IQueryable dynamically and runs one efficient SQL query against the database.
+                _events = await EventService.GetEventsAsync(_searchTerm, _filterDate, _filterVenueId, _filterActivityType);
+            }
+            catch (Exception)
+            {
+                // Swallow here to prevent an unhandled exception from an async void handler
+                // crashing the Blazor circuit. The list simply stays in its last state.
+                _events ??= new();
+            }
             StateHasChanged();
         });
     }
