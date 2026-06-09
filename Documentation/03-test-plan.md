@@ -1,15 +1,16 @@
 # Test Plan and Results
 
-All **43 automated tests pass**. They use xUnit and are spread across several styles so each layer
+All **93 automated tests pass**. They use xUnit and are spread across several styles so each layer
 is tested in the most appropriate way, covering happy paths, edge cases and boundary conditions.
 
 | Test group | Style | Count | What it covers |
 |------------|-------|-------|----------------|
-| Entity rules | Plain xUnit | 8 | Duplicate registration, capacity reached exactly (boundary), re-registering after a cancellation (edge case), available-seat counting, cancellation, collection de-duplication |
-| Polymorphism | Plain xUnit | 4 | `GetActivityDetails()` dispatched through base-type references to each subclass |
-| Validators | FluentValidation TestHelper | 10 | Cross-property end-time rule, conditional per-subclass rules, boundary capacities, invalid email, empty password |
-| Repositories | SQLite in-memory | 7 | Save with links, unknown id, filter by date / venue / activity-type (TPH discriminator), unique-index violation, cascade delete |
-| Services | Moq | 11 | Register happy path, duplicate, capacity, cancelled event, event/participant not found, cancel event, cancel registration |
+| Entity rules | Plain xUnit | 15 | Duplicate registration, capacity reached exactly (boundary), re-registering after cancellation (edge), available-seat counting, all-cancelled seats freed (edge), **Cancel() idempotency** (boundary), UpdatedAt set on cancel, activity and venue deduplication, venue removal |
+| Polymorphism | Plain xUnit | 10 | `GetActivityDetails()` dispatched through base-type references to each subclass; each subclass surfaces its own specific fields; DurationMinutes on base class; IsAssignableFrom hierarchy check |
+| Validators | FluentValidation TestHelper | 30 | Cross-property end-time rule, conditional per-subclass rules, boundary capacities, name/description empty, date today (boundary), start==end time (boundary), negative capacity, duration zero, **SignUpViewModelValidator** (BCrypt 72-char max boundary, min-length boundary, passwords-match cross-property, invalid email, empty name), LoginValidator |
+| Repositories | SQLite in-memory | 15 | Save with links, unknown id, filter by date / venue / activity-type (TPH), unique-index violation, cascade delete, GetUpcomingAsync excludes cancelled and past (edge), includes today (boundary), GetAllAsync, SearchAsync by term and no-filters, UpdateAsync, SaveCancellationAsync |
+| Event service | Moq | 12 | All three GetEventsAsync overloads, GetUpcomingEventsAsync, CreateEventAsync, UpdateEventAsync (no Id, capacity below active registrations, capacity exactly equals active count boundary), DeleteEventAsync, CancelEventAsync when event not found |
+| Registration services | Moq | 8 | Register happy path, duplicate, capacity, cancelled event, event/participant not found, cancel registration, cancel when not found |
 | Components | bUnit | 3 | Browse list renders cards, detail shows name, register-without-participant shows error |
 
 ## Why these testing methods
@@ -29,7 +30,7 @@ is tested in the most appropriate way, covering happy paths, edge cases and boun
 dotnet test
 ```
 
-Expected output: `Passed! - Failed: 0, Passed: 43`.
+Expected output: `Passed! - Failed: 0, Passed: 93`.
 
 > Add a screenshot of the Visual Studio Test Explorer (all green) here as evidence in the final
 > submission document.

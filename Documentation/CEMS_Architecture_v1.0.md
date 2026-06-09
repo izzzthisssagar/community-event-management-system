@@ -2,7 +2,7 @@
 
 ## SYSTEM DESIGN & ARCHITECTURE — DOCUMENT v1.0
 
-**Document Status:** ✅ FINALISED &nbsp;|&nbsp; **Release:** v1.0 &nbsp;|&nbsp; **Last Updated:** June 8, 2026
+**Document Status:** ✅ FINALISED &nbsp;|&nbsp; **Release:** v1.0 &nbsp;|&nbsp; **Last Updated:** June 9, 2026
 **Module:** CET254 Advanced Programming — Assignment 1 &nbsp;|&nbsp; **Author:** Sagar Thapa (bi95ss)
 **Classification:** Academic Submission — University of Sunderland
 
@@ -15,7 +15,7 @@ Blazor (Interactive Server)**, **Entity Framework Core 9** and **MySQL**. It is 
 **four-layer Clean Architecture** so that the business rules sit at the centre, free of any
 dependency on the database or the user interface. The design deliberately demonstrates a range of
 object-oriented techniques and recognised design patterns, while keeping every layer independently
-testable (proven by the 43-test automated suite).
+testable (proven by the 93-test automated suite).
 
 **Architectural goals**
 
@@ -146,7 +146,7 @@ this:
 | Database | MySQL / MariaDB 10.4.32 (XAMPP) via **Pomelo.EntityFrameworkCore.MySql 9.0** | SQLite used in-memory for tests |
 | Authentication | ASP.NET Core Cookie Authentication + **BCrypt.Net-Next** | Hashed, salted passwords |
 | Validation | **FluentValidation** + Blazored.FluentValidation | Cross-property + conditional rules |
-| Testing | xUnit, SQLite in-memory, Moq, bUnit, FluentValidation.TestHelper, **Microsoft.Playwright** (E2E) | 43 unit/integration/component tests + E2E layer |
+| Testing | xUnit, SQLite in-memory, Moq, bUnit, FluentValidation.TestHelper, **Microsoft.Playwright** (E2E) | 93 unit/integration/component tests + E2E layer |
 | Patterns/DI | Built-in Microsoft.Extensions.DependencyInjection | Scoped lifetimes for repos/services |
 
 ---
@@ -177,6 +177,7 @@ On startup the application creates a DI scope and runs `DbSeeder.SeedAsync`, whi
 | Concurrency token | `.IsConcurrencyToken()` not `.IsRowVersion()` | Portable across MySQL (production) and SQLite (tests). |
 | DbContext lifetime | `AddDbContextFactory` (not `AddDbContext`) | Safe for concurrent rendering on a Blazor Server circuit. |
 | Account model | `User` linked to `Participant` by e-mail | Separates authentication from domain data. |
+| Cancellation idempotency | `Event.Cancel()` guards `if (IsCancelled) return` | The original cancellation reason cannot be silently overwritten by a second call. |
 
 ---
 

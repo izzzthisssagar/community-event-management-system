@@ -58,7 +58,7 @@ polymorphism, etc. Follow this script and speak to each highlighted point. Keep 
   handled gracefully. Open `CustomErrorBoundary.razor` to show the global safety net.
 
 ## 6:30–8:30 — Testing (10%)
-- Open the Test Explorer, run all tests, show **43 green**.
+- Open the Test Explorer, run all tests, show **93 green**.
 - Open `EventRepositoryTests.cs` (SQLite in-memory — explain it enforces real FKs/unique indexes),
   `RegistrationServiceTests.cs` (Moq), `ValidatorTests.cs` (boundary + cross-property), and
   `ActivityPolymorphismTests.cs` (calling `GetActivityDetails()` through base references).

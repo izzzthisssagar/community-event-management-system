@@ -11,7 +11,7 @@ This folder contains everything for the written part of the submission.
 | `sequence-registration.png` | Rendered sequence diagram of the registration use case. |
 | `01-class-diagram.md` | The Mermaid source for the class diagram (re-render or edit at <https://mermaid.live>). |
 | `02-erd.md` | The Mermaid source for the ERD. |
-| `03-test-plan.md` | The test plan (43 tests) in Markdown. |
+| `03-test-plan.md` | The test plan (93 tests) in Markdown. |
 | `04-architecture-diagram.md` | The Mermaid source for the architecture diagram. |
 | `05-sequence-diagram.md` | The Mermaid source for the sequence diagram. |
 | `DEMO-SCRIPT.md` | A timed 10-minute script for the Panopto demonstration, mapped to each marking area. |

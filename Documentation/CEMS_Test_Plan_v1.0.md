@@ -2,7 +2,7 @@
 
 ## TEST PLAN & TEST DOCUMENTATION — v1.0
 
-**Document Status:** ✅ FINALISED &nbsp;|&nbsp; **Release:** v1.0 &nbsp;|&nbsp; **Last Updated:** June 8, 2026
+**Document Status:** ✅ FINALISED &nbsp;|&nbsp; **Release:** v1.0 &nbsp;|&nbsp; **Last Updated:** June 9, 2026
 **Module:** CET254 Advanced Programming — Assignment 1 &nbsp;|&nbsp; **Author:** Sagar Thapa (bi95ss)
 **Classification:** Academic Submission — University of Sunderland
 
@@ -22,9 +22,10 @@ way it is best verified:
 | **Component** (UI) | Blazor components render and behave correctly | bUnit |
 | **End-to-end** (whole app) | Real user journeys through a real browser | **Selenium WebDriver** & **Microsoft.Playwright** |
 
-The first four levels are the **43 automated tests** that ship with the solution; the fifth is the
-new **Playwright E2E** layer described in §5. Together they cover happy paths, **edge cases** (e.g.
-re-registering after a cancellation) and **boundary conditions** (e.g. capacity reached exactly).
+The first four levels are the **93 automated tests** that ship with the solution; the fifth is the
+**Playwright E2E** layer described in §5. Together they cover happy paths, **edge cases** (e.g.
+re-registering after a cancellation, `Cancel()` called twice) and **boundary conditions** (e.g.
+capacity reached exactly, BCrypt 72-char password limit, date today, start == end time).
 
 ### Why these testing methods
 
@@ -137,18 +138,19 @@ Legend: **P** = Pass (verified). Steps assume the app is running and seeded.
 
 ---
 
-## 4. AUTOMATED TESTS (43) — INVENTORY & MAPPING
+## 4. AUTOMATED TESTS (93) — INVENTORY & MAPPING
 
-All **43 automated tests pass** (`dotnet test` → `Passed: 43, Failed: 0`). They live in
+All **93 automated tests pass** (`dotnet test` → `Passed: 93, Failed: 0`). They live in
 `CommunityEventManagement.Tests/`.
 
 | Test file | Style | Count | Coverage (incl. edge & boundary) |
 |-----------|-------|:-----:|----------------------------------|
-| `Domain/EventEntityTests.cs` | Plain xUnit | 8 | Duplicate registration, **capacity reached exactly (boundary)**, **re-register after cancel (edge)**, available-seat counting, cancellation, collection de-duplication |
-| `Domain/ActivityPolymorphismTests.cs` | Plain xUnit | 4 | `GetActivityDetails()` dispatched through a base-type reference to each subclass |
-| `Application/ValidatorTests.cs` | FluentValidation.TestHelper | 10 | Cross-property end-time rule, conditional per-subclass rules, **boundary capacities**, invalid e-mail, empty password |
-| `Infrastructure/EventRepositoryTests.cs` | SQLite in-memory | 7 | Save with links, unknown id, filter by date / venue / activity-type (TPH), **unique-index violation**, cascade delete |
-| `Application/RegistrationServiceTests.cs` + `EventServiceTests.cs` + `RegistrationServiceEdgeCaseTests.cs` | Moq | 11 | Register happy path, duplicate, capacity, cancelled event, event/participant not found, cancel event, cancel registration |
+| `Domain/EventEntityTests.cs` | Plain xUnit | 15 | Duplicate registration, **capacity reached exactly (boundary)**, **re-register after cancel (edge)**, available-seat counting, all-cancelled seats freed (edge), **Cancel() idempotency** — second call preserves first reason (boundary), UpdatedAt set on Cancel, activity and venue deduplication, venue removal |
+| `Domain/ActivityPolymorphismTests.cs` | Plain xUnit | 10 | `GetActivityDetails()` dispatched through a base-type reference to each subclass; each subclass surfaces its own specific fields (materials, equipment, topic); DurationMinutes on base class; IsAssignableFrom hierarchy check |
+| `Application/ValidatorTests.cs` | FluentValidation.TestHelper | 30 | Cross-property end-time rule, conditional per-subclass rules, **boundary capacities (0, 1, negative)**, name/description empty, date today (boundary), start == end time (boundary), **SignUpViewModelValidator** (BCrypt 72-char max boundary, 6-char min boundary, passwords-match cross-property, invalid e-mail, empty first name), LoginValidator, ParticipantValidator |
+| `Infrastructure/EventRepositoryTests.cs` | SQLite in-memory | 15 | Save with links, unknown id, filter by date / venue / activity-type (TPH), **unique-index violation**, cascade delete, GetUpcomingAsync excludes cancelled events (edge), excludes past (edge), **includes today (boundary)**, GetAllAsync, SearchAsync by term and no-filters, UpdateAsync persists name change, SaveCancellationAsync |
+| `Application/EventServiceTests.cs` | Moq | 12 | All three GetEventsAsync overloads, GetUpcomingEventsAsync, CreateEventAsync, UpdateEventAsync (no Id guard, **capacity below active registrations**, **capacity exactly equals active count boundary**), DeleteEventAsync, CancelEventAsync when event not found |
+| `Application/RegistrationServiceTests.cs` + `RegistrationServiceEdgeCaseTests.cs` | Moq | 8 | Register happy path, duplicate, capacity, cancelled event, event/participant not found, cancel registration, cancel when not found |
 | `Components/EventListTests.cs` + `EventDetailTests.cs` | bUnit | 3 | Browse list renders cards; detail shows event name; register-without-participant shows the exact error |
 
 **Helper:** `TestHelpers/TestDbContextFactory.cs` builds an isolated SQLite-in-memory `DbContext`
@@ -159,12 +161,14 @@ per test.
 | Requirement | Covered by |
 |-------------|-----------|
 | BR-007 / FR-007 (no duplicate) | `EventEntityTests`, `RegistrationService*Tests`, `EventRepositoryTests` (unique index) |
-| BR-008 / FR-007 (capacity) | `EventEntityTests` (exact boundary), `RegistrationServiceTests` |
-| BR-009 (cancelled event) | `RegistrationServiceTests` |
-| BR-003 / FR-013 (cross-field) | `ValidatorTests` |
+| BR-008 / FR-007 (capacity) | `EventEntityTests` (exact boundary), `RegistrationServiceTests`, `EventServiceTests` (below active count + exact match) |
+| BR-009 (cancelled event) | `RegistrationServiceTests`, `GetUpcomingAsync` excludes cancelled |
+| BR-003 / FR-013 (cross-field) | `ValidatorTests` (end-time, passwords-match) |
 | BR-005 (polymorphism) | `ActivityPolymorphismTests` |
 | FR-006 (filters/TPH) | `EventRepositoryTests` |
 | FR-002/FR-007 (UI) | `EventListTests`, `EventDetailTests` |
+| Cancel idempotency | `EventEntityTests.Cancel_WhenCalledTwice_CancellationReasonIsFromFirstCall` |
+| BCrypt password limit | `ValidatorTests.SignUpValidator_WhenPasswordExceedsMaxLength_HasError` |
 
 ---
 
@@ -238,7 +242,7 @@ dotnet run --project CommunityEventManagement
 
 ```bash
 # Unit / integration / component tests (no app or DB required)
-dotnet test CommunityEventManagement.Tests        # -> Passed: 43
+dotnet test CommunityEventManagement.Tests        # -> Passed: 93
 
 # End-to-end via Selenium (app + MySQL + Chrome required, see §5b)
 #   PowerShell: $env:RUN_SELENIUM = "1"; dotnet test CommunityEventManagement.SeleniumTests
@@ -247,7 +251,7 @@ dotnet test CommunityEventManagement.Tests        # -> Passed: 43
 #   PowerShell: $env:RUN_E2E = "1"; dotnet test CommunityEventManagement.E2ETests
 ```
 
-Expected unit result: `Passed!  - Failed: 0, Passed: 43`.
+Expected unit result: `Passed!  - Failed: 0, Passed: 93`.
 
 > Attach a screenshot of the Visual Studio Test Explorer (all green) here as evidence in the final
 > submission document.
