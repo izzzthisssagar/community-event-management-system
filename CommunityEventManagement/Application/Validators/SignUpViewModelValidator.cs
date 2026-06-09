@@ -30,7 +30,8 @@ public class SignUpViewModelValidator : AbstractValidator<SignUpViewModel>
 
         RuleFor(s => s.Password)
             .NotEmpty().WithMessage("Please choose a password.")
-            .MinimumLength(6).WithMessage("Your password must be at least 6 characters.");
+            .MinimumLength(6).WithMessage("Your password must be at least 6 characters.")
+            .MaximumLength(72).WithMessage("Your password cannot be longer than 72 characters.");
 
         // Cross-property rule: the confirmation must match the password.
         RuleFor(s => s.ConfirmPassword)
